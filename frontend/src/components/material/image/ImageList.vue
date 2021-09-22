@@ -1,0 +1,274 @@
+<template>
+  <v-app>
+    <v-card>
+      <v-card-title>
+        <v-row class="p-2">
+          <v-spacer></v-spacer>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  icon
+                  color="blue darken-2"
+                  @click="uploadImageDialog=true"
+              >
+                <v-icon>mdi-image-plus</v-icon>
+              </v-btn>
+            </template>
+            <span>上传</span>
+          </v-tooltip>
+        </v-row>
+        <v-dialog
+            v-model="uploadImageDialog"
+            width="400"
+        >
+          <v-card>
+            <v-card-title class="pa-4">
+            </v-card-title>
+            <v-card-text>
+              <v-file-input
+                  label="点击选择图片"
+                  filled
+                  accept="image/png, image/jpeg, image/bmp"
+                  v-model="imageFile"
+                  prepend-icon="mdi-camera"
+              ></v-file-input>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                  color="success"
+                  @click="upload"
+              >
+                确认上传
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-card-title>
+      <v-card-text>
+        <v-lazy
+            v-model="isImageActive"
+            :options="{
+          threshold: .5
+        }"
+            min-height="200"
+            transition="fade-transition"
+        >
+          <v-container fluid class="text-center">
+            <v-row align="center"
+                   justify="center"
+                   class="fill-height"
+            >
+              <v-col
+                  v-for="image in images"
+                  :key="image.id"
+                  cols="12"
+                  lg="3"
+                  md="4"
+                  sm="6"
+                  xs="12"
+              >
+                <v-hover v-slot="{ hover }">
+                  <v-card
+                      :elevation="hover ? 12 : 0"
+                      :class="{ 'on-hover': hover }"
+                  >
+                    <v-img
+                        height="250"
+                        contain
+                        :src="image.url"
+                    >
+                      <v-card-actions>
+                        <v-row
+                            class="fill-height flex-column"
+                            justify="space-between"
+                        >
+                          <div class="align-self-center pt-2">
+                            <v-btn
+                                :class="{ 'blue darken-2 mx-2': hover }"
+                                :color="transparent"
+                                icon
+                                @click="preview(image.url)"
+                            >
+                              <v-icon
+                                  :class="{ 'show-btns': hover }"
+                                  :color="transparent"
+                              >mdi-eye
+                              </v-icon>
+                            </v-btn>
+
+                            <v-btn
+                                :class="{ 'red darken-2 mx-2': hover }"
+                                :color="transparent"
+                                icon
+                                @click="deleteImage(image.id)"
+                            >
+                              <v-icon
+                                  :class="{ 'show-btns': hover }"
+                                  :color="transparent"
+                              >mdi-delete
+                              </v-icon>
+                            </v-btn>
+                          </div>
+                        </v-row>
+                      </v-card-actions>
+                    </v-img>
+                    <div class="px-4 py-2 subheading text-truncate">
+                      {{ image.url }}
+                    </div>
+                  </v-card>
+                </v-hover>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-lazy>
+        <v-dialog
+            v-model="dialog"
+        >
+          <v-card>
+            <v-img
+                :src="previewImageUrl"
+            >
+            </v-img>
+          </v-card>
+        </v-dialog>
+      </v-card-text>
+    </v-card>
+    <v-overlay :value="overlay">
+      <v-progress-circular
+          indeterminate
+          color="primary"
+      ></v-progress-circular>
+    </v-overlay>
+  </v-app>
+
+</template>
+
+<script>
+export default {
+  name: "ImageList",
+  props: {
+    channel: Number,
+  },
+  data() {
+    return {
+      uploadImageDialog: false,
+      overlay: false,
+      dialog: false,
+      imageFile: null,
+      previewImageUrl: "",
+      isImageActive: null,
+      images: [],
+      transparent: 'rgba(255, 255, 255, 0)',
+    }
+  },
+  watch: {
+    channel: {
+      handler() {
+        this.getImages()
+      },
+    },
+  },
+  mounted() {
+    this.getImages()
+  },
+  methods: {
+    upload() {
+      this.overlay = false
+      let formData = new FormData();
+      formData.append('graphics_img', this.imageFile, this.imageFile.name);
+      this.$http.post('/graphics/material/image/upload', formData)
+          .then(response => {
+            console.log(JSON.stringify(response.data));
+            let resData = response.data;
+            if (resData.code === 0) {
+              this.$toast("保存成功！", {
+                type: 'success',
+                timeout: 2000
+              });
+              this.getImages()
+            } else if (resData.code === 40 || resData.code === 1000004001) {
+              this.$toast('保存出错：' + resData.message + '【' +
+                  resData.data.errors[Object.keys(resData.data.errors)[0]][0] + '】', {
+                type: 'error',
+              });
+            } else {
+              this.$toast('保存出错：' + resData.message, {
+                type: 'error',
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            this.$toast('保存出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay = false);
+    },
+    preview(url) {
+      this.previewImageUrl = url;
+      this.dialog = true;
+    },
+    deleteImage(id) {
+      this.$http.post('/graphics/material/delete', {id: id})
+          .then(response => {
+            console.log(JSON.stringify(response.data));
+            let resData = response.data;
+            if (resData.code === 0) {
+              this.$toast('删除图片成功！' + resData.message, {
+                type: 'error',
+                timeout: 2000,
+              });
+              this.getImages();
+            } else {
+              this.$toast('删除图片出错：' + resData.message, {
+                type: 'error',
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            this.$toast('保存出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay = false);
+    },
+    getImages() {
+      this.overlay = true;
+      this.$http.post('/graphics/material/list', {type: 'image', channel_id: this.channel})
+          .then(response => {
+            console.log(JSON.stringify(response.data));
+            let resData = response.data;
+            if (resData.code === 0) {
+              this.images = resData.data;
+            } else {
+              this.$toast('获取图片出错：' + resData.message, {
+                type: 'error',
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            this.$toast('保存出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay = false);
+
+    },
+  },
+}
+</script>
+
+<style scoped>
+.show-btns {
+  color: rgba(255, 255, 255, 1) !important;
+}
+</style>
