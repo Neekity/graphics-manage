@@ -54,7 +54,6 @@ export default {
       hasInit: false,
       hasChange: false,
       init: {
-        base_url: this.baseUrl,
         toolbar_mode:'wrap',
         toolbar_location:'auto',
         contextmenu_avoid_overlap: '.mce-spelling-word',

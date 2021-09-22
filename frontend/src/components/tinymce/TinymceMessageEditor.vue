@@ -61,7 +61,6 @@ export default {
       hasInit: false,
       hasChange: false,
       init: {
-        base_url: this.baseUrl,
         toolbar_mode:'wrap',
         autosave_ask_before_unload:false,
         autosave_prefix: 'tinymce-autosave-{path}{query}-{id}-',
