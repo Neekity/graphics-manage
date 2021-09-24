@@ -1,0 +1,78 @@
+version: "3"
+
+services:
+  graphics-beanstalkd-1:
+    build:
+      context: ./
+      dockerfile: docker/backend/beanstalkd.Dockerfile
+    container_name: graphics-beanstalkd-1
+    hostname: graphics-beanstalkd-1
+    expose:
+      - 7771
+    command: ["/bin/sh", "-c", "beanstalkd -p 7771"]
+    networks:
+      - graphics-nets
+  graphics-beanstalkd-2:
+    build:
+      context: ./
+      dockerfile: docker/backend/beanstalkd.Dockerfile
+    container_name: graphics-beanstalkd-2
+    hostname: graphics-beanstalkd-2
+    expose:
+      - 7772
+    command: [ "/bin/sh", "-c", "beanstalkd -p 7772"]
+    networks:
+      - graphics-nets
+  graphics-vue:
+    build:
+      context: frontend
+      args:
+        - NODE_VERSION=alpine
+        - NPM_REGISTRY=https://registry.npm.taobao.org/
+        - INSTALL_NPM_VUE_CLI=true
+    container_name: graphics-vue
+    hostname: graphics-vue
+    depends_on:
+      - graphics-api
+    volumes:
+      - ./frontend:/data
+    networks:
+      - graphics-nets
+  graphics-api:
+    build:
+      context: ./
+      dockerfile: docker/backend/go.Dockerfile
+    container_name: graphics-api
+    hostname: graphics-api
+    expose:
+      - 80
+    command: [ "/bin/sh", "-c", "cd toml && air -c .graphics-api.air.toml" ]
+    volumes:
+      - ./:/data
+    depends_on:
+      - graphics-beanstalkd-1
+      - graphics-beanstalkd-2
+      - graphics-redis
+    networks:
+      - graphics-nets
+  graphics-redis:
+    container_name: graphics-redis
+    image: daocloud.io/library/redis:4.0.10-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - 63799:6379
+    networks:
+      - graphics-nets
+  graphics-nginx:
+    image: nginx:alpine
+    container_name: graphics-nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8484:80"
+    volumes:
+      - ./docker/nginx/:/etc/nginx/conf.d/
+    networks:
+      - graphics-nets
+networks:
+  graphics-nets:

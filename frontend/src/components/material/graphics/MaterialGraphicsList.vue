@@ -2,18 +2,18 @@
   <v-app>
     <v-card>
       <v-card-title>
-        <v-row class="pl-2">
-          <v-col
-              cols="12"
-              lg="3"
-              md="4"
-              sm="6"
-              xs="8"
+        <v-row>
+          <v-col cols="12"
+                 lg="3"
+                 md="4"
+                 sm="6"
+                 xs="12"
           >
             <v-text-field
                 v-model="materialName"
-                label="请输入名称搜索"
-                single-line
+                label="请输入标题"
+                outlined
+                dense
             >
               <v-icon
                   slot="append"
@@ -24,34 +24,115 @@
               </v-icon>
             </v-text-field>
           </v-col>
-          <v-spacer></v-spacer>
-          <v-col
-              cols="12"
-              lg="1"
-              md="2"
-              sm="2"
-              xs="4"
+          <v-col cols="12"
+                 lg="3"
+                 md="4"
+                 sm="6"
+                 xs="12"
           >
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                    v-bind="attrs"
-                    v-on="on"
-                    icon
-                    color="blue darken-2"
-                    href="/graphics/material/graphics/create"
-                >
-                  <v-icon>mdi-plus</v-icon>
-                </v-btn>
-              </template>
-              <span>新建图文模版</span>
-            </v-tooltip>
+            <v-select
+                v-model="channel"
+                item-text="name"
+                item-value="id"
+                :items="channelItems"
+                label="选择频道"
+                dense
+                outlined
+            ></v-select>
           </v-col>
-        </v-row>
 
+          <v-spacer></v-spacer>
+          <v-tooltip bottom v-if="showTable">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  icon
+                  color="blue darken-2"
+                  @click="showTable=false"
+              >
+                <v-icon>mdi-image-multiple</v-icon>
+              </v-btn>
+            </template>
+            <span>切换成图文卡片显示</span>
+          </v-tooltip>
+          <v-tooltip bottom v-if="!showTable">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  icon
+                  color="blue darken-2"
+                  @click="showTable=true"
+              >
+                <v-icon>mdi-table</v-icon>
+              </v-btn>
+            </template>
+            <span>切换成表格显示</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  icon
+                  color="blue darken-2"
+                  href="/material/create"
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </template>
+            <span>新建图文素材</span>
+          </v-tooltip>
+        </v-row>
       </v-card-title>
       <v-card-text>
+        <v-data-table
+            v-if="showTable"
+            :headers="headers"
+            :items="graphics"
+            item-key="id"
+            class="elevation-0"
+            :footer-props="{
+              showFirstLastPage: true,
+              firstIcon: 'mdi-arrow-collapse-left',
+              lastIcon: 'mdi-arrow-collapse-right',
+              prevIcon: 'mdi-minus',
+              nextIcon: 'mdi-plus'
+            }"
+        >
+          <template v-slot:item.actions="{ item }">
+            <v-icon
+                small
+                class="mr-2"
+                @click="edit(item.id)"
+            >
+              mdi-pencil
+            </v-icon>
+            <v-icon
+                small
+                @click="confirm(item.id)"
+            >
+              mdi-delete
+            </v-icon>
+          </template>
+          <template v-slot:no-data>
+            <v-btn
+                color="primary"
+                @click="initialize"
+            >
+              Reset
+            </v-btn>
+          </template>
+          <template v-slot:item.name="{ item }">
+            <TextTruncate :text="item.name"></TextTruncate>
+          </template>
+          <template v-slot:item.abstract="{ item }">
+            <TextTruncate :text="item.abstract"></TextTruncate>
+          </template>
+        </v-data-table>
         <v-lazy
+            v-if="!showTable"
             v-model="isActive"
             :options="{
           threshold: .5
@@ -71,15 +152,20 @@
                   xs="12"
               >
                 <v-card>
+                  <v-img
+                      :src="item.url"
+                      aspect-ratio="2.347"
+                  >
+                  </v-img>
                   <v-card-title class="text-h6">
-                    {{ item.name }}
+                    <TextTruncate :text="item.name" max-width="200px"></TextTruncate>
                   </v-card-title>
-                  <div class="tinymce-viewer px-2">
-                    <tiny-mce-viewer v-model="item.content" :skin-url="skinUrl"></tiny-mce-viewer>
-                  </div>
+                  <v-card-subtitle class="text-left">
+                    <TextTruncate :text="item.abstract?item.abstract:'<未填写摘要>'" max-width="200px"></TextTruncate>
+                  </v-card-subtitle>
                   <v-divider></v-divider>
                   <v-card-actions class="pt-0">
-                    <div>更新于 {{ item.update_at }}</div>
+                    <div>更新于 {{ item.updated_at }}</div>
                     <v-spacer></v-spacer>
                     <v-btn icon color="blue darken-2" @click="edit(item.id)">
                       <v-icon>mdi-pencil</v-icon>
@@ -103,7 +189,7 @@
                           <v-btn
                               color="success"
                               text
-                              @click="deleteTemplate()"
+                              @click="deleteGraphics()"
                           >
                             确认
                           </v-btn>
@@ -127,23 +213,32 @@
   </v-app>
 </template>
 <script>
-import TinyMceViewer from "../../tinymce/TinyMceViewer";
+import TextTruncate from "../../TextTruncate";
 
 export default {
   name: "MaterialGraphicsList",
-  components: {TinyMceViewer},
-  props: {
-    channel: Number,
-    skinUrl: String,
-  },
+  components: {TextTruncate},
   data() {
     return {
+      channel: null,
       isActive: false,
+      showTable: false,
       graphics: [],
       materialName: "",
       overlay: false,
       dialog: false,
       deleteId: 0,
+      headers: [{
+        text: '标题',
+        align: 'start',
+        sortable: false,
+        value: 'name',
+      },
+        {text: '摘要', value: 'abstract'},
+        {text: '频道', value: 'channel_id'},
+        {text: '更新时间', value: 'updated_at'},
+        {text: 'Actions', value: 'actions', sortable: false},
+      ]
     }
   },
   watch: {
@@ -154,12 +249,36 @@ export default {
     },
   },
   mounted() {
-    // this.getGraphics()
+    this.getGraphics()
+    this.getChannel()
   },
   methods: {
+    getChannel() {
+      this.overlay = true;
+      this.$axios.post('/graphics/material/channel')
+          .then(response => {
+            console.log(JSON.stringify(response.data));
+            let resData = response.data;
+            if (resData.code === 0) {
+              this.channelItems = resData.data;
+            } else {
+              this.$toast('获取频道出错：' + resData.message, {
+                type: 'error',
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            this.$toast('保存出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay = false);
+    },
     getGraphics() {
       this.overlay = true;
-      this.$http.post('/graphics/material/list', {type: 'graphics', channel_id: this.channel, name: this.materialName})
+      this.$axios.post('/backend/material/list', {type: 'graphics', name: this.materialName})
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;
@@ -181,16 +300,21 @@ export default {
           .finally(() => this.overlay = false);
     },
     edit(id) {
-      location.href = "/graphics/material/graphics/" + id + "/edit"
+      this.$route.push({
+        path: '/material/graphics/edit',
+        query: {
+          id: id
+        }
+      });
     },
     confirm(id) {
       this.dialog = true;
       this.deleteId = id
     },
-    deleteTemplate() {
+    deleteGraphics() {
       this.dialog = false;
       this.overlay = true;
-      this.$http.post('/graphics/material/delete', {id: this.deleteId})
+      this.$axios.post('/backend/material/delete', {id: this.deleteId})
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;

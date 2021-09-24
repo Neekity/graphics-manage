@@ -1,14 +1,7 @@
 <template>
   <div id="app">
     <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link> |
       <router-link to="/material">素材库</router-link> |
-      <router-link to="/template">编辑模版</router-link> |
-      <router-link to="/graphics/edit">图文编辑</router-link> |
-      <router-link to="/message/list">图文用户</router-link> |
-      <router-link to="/message/show">图文内容</router-link> |
-      <router-link to="/message/inline-show">inline图文内容</router-link> |
     </div>
     <router-view/>
   </div>

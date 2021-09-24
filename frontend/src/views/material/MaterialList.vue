@@ -1,131 +1,48 @@
 <template>
   <v-app>
-    <v-container fluid>
-      <v-row>
-        <v-col cols="12"
-        >
-          <v-file-input
-              label="点击选择图片"
-              filled
-              dense
-              accept="image/png, image/jpeg, image/bmp"
-              v-model="imageFile"
-              prepend-icon="mdi-camera"
-          ></v-file-input>
-        </v-col>
-        <v-col cols="12">
-          <v-select
-              v-model="channel"
-              item-text="name"
-              item-value="id"
-              :items="channelItems"
-              label="上传频道"
-              :rules="[value => !!value || '请选择上传的频道！',]"
-              dense
-              outlined
-          ></v-select>
-        </v-col>
-      </v-row>
-      <v-row >
-        <v-spacer></v-spacer>
-        <v-btn
-            color="success"
-            :disabled="!imageFile || !channel"
-            @click="upload"
-        >
-          确认上传
-        </v-btn>
-      </v-row>
-
-    </v-container>
-
-    <v-overlay :value="overlay">
-      <v-progress-circular
-          indeterminate
-          color="primary"
-      ></v-progress-circular>
-    </v-overlay>
+    <v-card>
+      <v-card-text>
+        <v-tabs v-model="tab">
+          <v-tabs-slider></v-tabs-slider>
+          <v-tab
+              v-for="item in items"
+              :key="item"
+          >{{ item }}
+          </v-tab>
+        </v-tabs>
+        <v-tabs-items v-model="tab">
+          <v-tab-item
+              key="图文素材">
+            <material-graphics-list></material-graphics-list>
+          </v-tab-item>
+          <v-tab-item
+              key="图片">
+            <image-list></image-list>
+          </v-tab-item>
+          <v-tab-item
+              key="模版">
+            <material-template-list ></material-template-list>
+          </v-tab-item>
+        </v-tabs-items>
+      </v-card-text>
+    </v-card>
   </v-app>
-
 </template>
 
 <script>
+import ImageList from "../../components/material/image/ImageList";
+import MaterialGraphicsList from "../../components/material/graphics/MaterialGraphicsList";
+import MaterialTemplateList from "../../components/material/template/MaterialTemplateList";
+
 export default {
-  name: "UploadImage",
+  name: "MaterialList",
+  components: {MaterialGraphicsList, ImageList,MaterialTemplateList},
+  props:['skinUrl'],
   data() {
     return {
-      imageFile: null,
-      channel: null,
-      channelItems: [],
-      overlay: false,
+      items: ['图文', '图片', '模版'],
+      tab: null,
     }
   },
-  created() {
-    this.getChannel();
-  },
-  methods: {
-    upload() {
-      this.uploadImageDialog = false;
-      this.overlay = true;
-      let formData = new FormData();
-      formData.append('graphics_img', this.imageFile, this.imageFile.name);
-      formData.append('channel_id', this.channel);
-      this.$http.post('/graphics/material/image/upload', formData)
-          .then(response => {
-            console.log(JSON.stringify(response.data));
-            let resData = response.data;
-            if (resData.code === 0) {
-              this.$toast("上传成功！", {
-                type: 'success',
-                timeout: 2000
-              });
-            } else if (resData.code === 40 || resData.code === 1000004001) {
-              this.$toast('上传出错：' + resData.message + '【' +
-                  resData.data.errors[Object.keys(resData.data.errors)[0]][0] + '】', {
-                type: 'error',
-              });
-            } else {
-              this.$toast('上传出错：' + resData.message, {
-                type: 'error',
-              });
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            this.$toast('上传出错：服务器出错！', {
-              type: 'error',
-              timeout: 2000,
-            });
-          })
-          .finally(() => this.overlay = false);
-    },
-    getChannel() {
-      this.overlay = true;
-      this.$http.post('/graphics/material/channel')
-          .then(response => {
-            console.log(JSON.stringify(response.data));
-            let resData = response.data;
-            if (resData.code === 0) {
-              this.channelItems = resData.data;
-            } else {
-              this.$toast('获取频道出错：' + resData.message, {
-                type: 'error',
-              });
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            this.$toast('保存出错：服务器出错！', {
-              type: 'error',
-              timeout: 2000,
-            });
-          })
-          .finally(() => this.overlay = false);
-    },
-  }
 }
 </script>
-
-<style scoped>
-
-</style>

@@ -2,53 +2,89 @@
   <v-app>
     <v-card>
       <v-card-title>
-        <v-row class="pl-2">
-          <v-col
-              cols="12"
-              lg="3"
-              md="4"
-              sm="6"
-              xs="8"
+        <v-row>
+          <v-col cols="12"
+                 lg="3"
+                 md="4"
+                 sm="6"
+                 xs="12"
           >
             <v-text-field
                 v-model="materialName"
-                label="请输入名称搜索"
-                single-line
+                label="请输入标题"
+                outlined
+                dense
             >
               <v-icon
                   slot="append"
                   color="blue"
-                  @click="getGraphics"
+                  @click="getTemplates"
               >
                 mdi-magnify
               </v-icon>
             </v-text-field>
           </v-col>
-          <v-spacer></v-spacer>
-          <v-col
-              cols="12"
-              lg="1"
-              md="2"
-              sm="2"
-              xs="4"
+          <v-col cols="12"
+                 lg="3"
+                 md="4"
+                 sm="6"
+                 xs="12"
           >
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                    v-bind="attrs"
-                    v-on="on"
-                    icon
-                    color="blue darken-2"
-                    href="/graphics/material/graphics/create"
-                >
-                  <v-icon>mdi-plus</v-icon>
-                </v-btn>
-              </template>
-              <span>新建图文模版</span>
-            </v-tooltip>
+            <v-select
+                v-model="channel"
+                item-text="name"
+                item-value="id"
+                :items="channelItems"
+                label="选择频道"
+                dense
+                outlined
+            ></v-select>
           </v-col>
-        </v-row>
 
+          <v-spacer></v-spacer>
+          <v-tooltip bottom v-if="showTable">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  icon
+                  color="blue darken-2"
+                  @click="showTable=false"
+              >
+                <v-icon>mdi-image-multiple</v-icon>
+              </v-btn>
+            </template>
+            <span>切换成图文卡片显示</span>
+          </v-tooltip>
+          <v-tooltip bottom v-if="!showTable">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  icon
+                  color="blue darken-2"
+                  @click="showTable=true"
+              >
+                <v-icon>mdi-table</v-icon>
+              </v-btn>
+            </template>
+            <span>切换成表格显示</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  icon
+                  color="blue darken-2"
+                  href="/material/create"
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </template>
+            <span>新建图文素材</span>
+          </v-tooltip>
+        </v-row>
       </v-card-title>
       <v-card-text>
         <v-lazy
@@ -75,7 +111,7 @@
                     {{ item.name }}
                   </v-card-title>
                   <div class="tinymce-viewer px-2">
-                    <tiny-mce-viewer v-model="item.content" :skin-url="this.skinUrl"></tiny-mce-viewer>
+                    <tinymce-viewer v-model="item.content" :base-url="baseUrl"></tinymce-viewer>
                   </div>
                   <v-divider></v-divider>
                   <v-card-actions class="pt-0">
@@ -127,17 +163,18 @@
   </v-app>
 </template>
 <script>
-import TinyMceViewer from "../../tinymce/TinyMceViewer";
+import TinymceViewer from "../../tinymce/TinymceViewer";
 
 export default {
   name: "MaterialTemplateList",
-  components: {TinyMceViewer},
+  components: {TinymceViewer},
   props: {
     channel: [String, Number],
     skinUrl: String,
   },
   data() {
     return {
+      baseUrl:""
       isActive: false,
       templates: [],
       materialName: "",
@@ -149,15 +186,15 @@ export default {
   watch: {
     channel: {
       handler() {
-        this.getGraphics()
+        this.getTemplates()
       }
     },
   },
   mounted() {
-    this.getGraphics()
+    this.getTemplates()
   },
   methods: {
-    getGraphics() {
+    getTemplates() {
       this.overlay = true;
       this.$http.post('/graphics/material/list', {type: 'template', channel_id: this.channel, name: this.materialName})
           .then(response => {
@@ -199,7 +236,7 @@ export default {
                 type: 'success',
                 timeout: 2000
               });
-              this.getGraphics()
+              this.getTemplates()
             } else {
               this.$toast('删除数据出错：' + resData.message, {
                 type: 'error',

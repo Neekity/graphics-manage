@@ -1,0 +1,71 @@
+syntax = "v1"
+
+info(
+    title: "Material"
+    desc: "素材库"
+    author: "Neekity"
+    email: "tc_huang1995@163.com"
+)
+
+type (
+    StoreMaterialRequest {
+        Name string `json:"name"`
+        Type string `json:"type"`
+        Url string `json:"url"`
+        Content string `json:"content"`
+        Abstract string `json:"abstract"`
+        ChannelId int `json:"channel_id"`
+    }
+
+    MaterialImageUploadRequest {
+        ChannelId int `json:"channel_id"`
+    }
+
+    DeleteMaterialRequest {
+        Id int `json:"id"`
+    }
+
+    MaterialDetailRequest {
+        Id int `json:"id"`
+    }
+
+    SearchMaterialRequest {
+        Name string `json:"name"`
+        Type string `json:"type"`
+    }
+
+    PublishMaterialRequest {
+        Id int `json:"id"`
+        Receivers []string `json:"receivers"`
+        SendTime string `json:"send_time"`
+        Author string `json:"author"`
+    }
+)
+
+
+@server(
+    middleware: Auth,AccessLog,CheckDataPermission
+    group: material
+)
+service graphics-api {
+    @handler StoreMaterial
+    post /material/store (StoreMaterialRequest) returns (ApiResponse)
+
+    @handler DeleteMaterial
+    post /material/delete (DeleteMaterialRequest) returns (ApiResponse)
+
+    @handler MaterialDetail
+    post /material/detail (MaterialDetailRequest) returns (ApiResponse)
+
+    @handler MaterialImageUpload
+    post /material/image/upload (MaterialImageUploadRequest) returns (ApiResponse)
+
+    @handler MaterialList
+    post /material/list (SearchMaterialRequest) returns (ApiResponse)
+
+    @handler MaterialPublish
+    post /material/publish (SearchMaterialRequest) returns (ApiResponse)
+
+    @handler MaterialChannels
+    post /material/channels () returns (ApiResponse)
+}

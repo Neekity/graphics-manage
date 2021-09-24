@@ -1,0 +1,36 @@
+syntax = "v1"
+
+info(
+    title: "User"
+    desc: "用户"
+    author: "Neekity"
+    email: "tc_huang1995@163.com"
+)
+
+type (
+    SearchUserRequest {
+        Name string `json:"name"`
+        Page int `json:"page"`
+    }
+
+    AssignRolerRequest {
+        Id uint `json:"id"`
+        Roles []string `json:"roles"`
+    }
+)
+
+@server(
+    middleware: Auth,AccessLog
+    group: user
+)
+service graphics-api {
+
+    @handler GetUserList
+    post /user (SearchUserRequest) returns (ApiResponse)
+
+    @handler AssignRole
+    post /user/role/assign (AssignRolerRequest) returns (ApiResponse)
+
+    @handler GetUserInfo
+    post /user/info () returns (ApiResponse)
+}

@@ -20,6 +20,7 @@ import 'tinymce/plugins/fullscreen'
 import 'tinymce/plugins/paste'
 import 'tinymce/plugins/emoticons'
 import 'tinymce/plugins/autosave'
+import 'tinymce/plugins/codesample'
 
 export default {
   name: 'TinymceMessageEditor',
@@ -61,9 +62,8 @@ export default {
       hasInit: false,
       hasChange: false,
       init: {
+        base_url: this.baseUrl,
         toolbar_mode:'wrap',
-        autosave_ask_before_unload:false,
-        autosave_prefix: 'tinymce-autosave-{path}{query}-{id}-',
         toolbar_location:'auto',
         contextmenu_avoid_overlap: '.mce-spelling-word',
         contextmenu: "bold link image imagetools table spellchecker",
@@ -71,7 +71,7 @@ export default {
         language: 'zh_CN',
         language_url: this.baseUrl + 'langs/zh_CN.js',
         width:'100%',
-        toolbar: 'restoredraft | forecolor backcolor bold italic link hr| bullist numlist table image template fullscreen emoticons | alignleft aligncenter alignright alignjustify outdent indent | formatselect fontselect fontsizeselect',
+        toolbar: 'forecolor backcolor bold italic link hr restoredraft| bullist numlist table image template fullscreen emoticons codesample| alignleft aligncenter alignright alignjustify outdent indent | formatselect fontselect fontsizeselect',
         content_style: "img {display: block;max-width: 100%; height: auto;} body{margin:0;}",
         image_description: false,
         placeholder: '请在此输入正文内容',
@@ -82,8 +82,9 @@ export default {
         elementpath: false, // 禁用编辑器底部的状态栏
         statusbar: false, // 隐藏编辑器底部的状态栏
         paste_data_images: false, // 不允许粘贴图像
+        autosave_ask_before_unload:true,
         menubar: false, // 隐藏最上方menu
-        plugins: 'image link hr template autoresize table advlist lists fullscreen paste autosave emoticons', // 图片插件
+        plugins: 'image link hr template autoresize table advlist lists fullscreen paste autosave emoticons codesample', // 图片插件
         templates: this.editorTemplates,
         fontsize_formats: '12px 14px 16px 18px 24px 36px 48px 56px 72px',
         font_formats: '微软雅黑=Microsoft YaHei,Helvetica Neue,PingFang SC,sans-serif;苹果苹方=PingFang SC,Microsoft YaHei,sans-serif;宋体=simsun,serif;仿宋体=FangSong,serif;黑体=SimHei,sans-serif;Arial=arial,helvetica,sans-serif;Arial Black=arial black,avant garde;Book Antiqua=book antiqua,palatino;Comic Sans MS=comic sans ms,sans-serif;Courier New=courier new,courier;Georgia=georgia,palatino;Helvetica=helvetica;Impact=impact,chicago;Symbol=symbol;Tahoma=tahoma,arial,helvetica,sans-serif;Terminal=terminal,monaco;Times New Roman=times new roman,times;Verdana=verdana,geneva;Webdings=webdings;Wingdings=wingdings,zapf dingbats;知乎配置=BlinkMacSystemFont, Helvetica Neue, PingFang SC, Microsoft YaHei, Source Han Sans SC, Noto Sans CJK SC, WenQuanYi Micro Hei, sans-serif;小米配置=Helvetica Neue,Helvetica,Arial,Microsoft Yahei,Hiragino Sans GB,Heiti SC,WenQuanYi Micro Hei,sans-serif',
@@ -97,6 +98,7 @@ export default {
                 console.log(JSON.stringify(response.data));
                 let resData = response.data;
                 if (resData.code === 0) {
+                  this.$emit('getImages');
                   success(resData.data.url)
                 } else {
                   fail('上传失败：' + resData.message)

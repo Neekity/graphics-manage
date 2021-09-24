@@ -1,0 +1,35 @@
+syntax = "v1"
+
+info(
+    title: "Message"
+    desc: "消息相关"
+    author: "Neekity"
+    email: "tc_huang1995@163.com"
+)
+
+type (
+    MessageChangeStatusRequest {
+        Id int `json:"id"`
+        Status int `json:"status"`
+    }
+
+    SearchMessageRequest {
+        Name string `json:"name"`
+        Page int `json:"page"`
+        Type string `json:"type"`
+        ChannelId int `json:"channel_id"`
+    }
+)
+
+
+@server(
+    middleware: Auth,AccessLog,CheckDataPermission
+    group: message
+)
+service graphics-api {
+    @handler MessageChangeStatus
+    post /Message/change-status (MessageChangeStatusRequest) returns (ApiResponse)
+
+    @handler MessageList
+    post /Message/list (SearchMessageRequest) returns (ApiResponse)
+}

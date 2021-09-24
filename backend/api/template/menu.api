@@ -1,0 +1,38 @@
+syntax = "v1"
+
+info(
+    title: "Menu"
+    desc: "菜单路由相关"
+    author: "Neekity"
+    email: "tc_huang1995@163.com"
+)
+
+type (
+    DeleteMenuRequest {
+        Id uint `json:"id"`
+    }
+
+    StoreMenuRequest {
+        Id uint `json:"id"`
+        Name string `json:"name"`
+        ParentId int64 `json:"parent_id"`
+        Uri string `json:"uri"`
+        Icon string `json:"icon"`
+    }
+)
+
+
+@server(
+    middleware: Auth,AccessLog
+    group: menu
+)
+service graphics-api {
+    @handler DeleteMenu
+    post /menu/delete (DeleteMenuRequest) returns (ApiResponse)
+
+    @handler MenuList
+    post /menu/list () returns (ApiResponse)
+
+    @handler StoreMenu
+    post /menu/edit (StoreMenuRequest) returns (ApiResponse)
+}

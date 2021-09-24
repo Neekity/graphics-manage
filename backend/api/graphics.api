@@ -1,0 +1,33 @@
+syntax = "v1"
+
+import (
+	"template/channel.api"
+	"template/material.api"
+	"template/menu.api"
+	"template/message.api"
+	"template/oauth.api"
+	"template/user.api"
+)
+
+info(
+	title: "Graphics"
+	desc: "图文系统"
+	author: "Neekity"
+	email: "tc_huang1995@163.com"
+)
+
+type (
+	ApiResponse {
+		Code    int         `json:"code"`
+		Message string      `json:"message"`
+		Data    interface{} `json:"data"`
+	}
+
+	ApiListData {
+		CurPage    int         `json:"curPage"`
+		LastPage   int         `json:"lastPage"`
+		List       interface{} `json:"list"`
+		PageSize   int         `json:"pageSize"`
+		TotalCount int         `json:"totalCount"`
+	}
+)

@@ -1,0 +1,43 @@
+syntax = "v1"
+
+info(
+    title: "Channel"
+    desc: "频道相关"
+    author: "Neekity"
+    email: "tc_huang1995@163.com"
+)
+
+type (
+    StoreChannelRequest {
+        Id int `json:"id"`
+        Name string `json:"name"`
+        Manager []string `json:"manager"`
+        Audience []string `json:"audience"`
+    }
+
+    DeleteChanenlRequest {
+        Id int `json:"id"`
+    }
+
+    SearchChannelRequest {
+        Name string `json:"name"`
+        Page int `json:"page"`
+    }
+)
+
+
+@server(
+    middleware: Auth,AccessLog
+    group: channel
+)
+service graphics-api {
+    @handler StoreChannel
+    post /channel/store (StoreChannelRequest) returns (ApiResponse)
+
+    @handler DeleteChannel
+    post /channel/delete (DeleteChanenlRequest) returns (ApiResponse)
+
+
+    @handler ChannelList
+    post /channel/list (SearchChannelRequest) returns (ApiResponse)
+}

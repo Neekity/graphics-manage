@@ -2708,11 +2708,6 @@ core-js-compat@^3.14.0, core-js-compat@^3.16.0, core-js-compat@^3.6.5:
     browserslist "^4.16.8"
     semver "7.0.0"
 
-core-js@^2.6.5:
-  version "2.6.12"
-  resolved "https://registry.nlark.com/core-js/download/core-js-2.6.12.tgz#d9333dfa7b065e347cc5682219d6f690859cc2ec"
-  integrity sha1-2TM9+nsGXjR8xWgiGdb2kIWcwuw=
-
 core-js@^3.6.5:
   version "3.17.1"
   resolved "https://registry.nlark.com/core-js/download/core-js-3.17.1.tgz#b39e086f413789cf2ca4680c4ecd1b36a50ba277"
@@ -3384,11 +3379,6 @@ entities@^2.0.0:
   version "2.2.0"
   resolved "https://registry.nlark.com/entities/download/entities-2.2.0.tgz#098dc90ebb83d8dffa089d55256b351d34c4da55"
   integrity sha1-CY3JDruD2N/6CJ1VJWs1HTTE2lU=
-
-epic-spinners@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.npm.taobao.org/epic-spinners/download/epic-spinners-1.1.0.tgz#293d67593557572b02ca2f503c49706fc2a57cb8"
-  integrity sha1-KT1nWTVXVysCyi9QPElwb8KlfLg=
 
 errno@^0.1.3, errno@~0.1.7:
   version "0.1.8"
@@ -4318,11 +4308,6 @@ hex-color-regex@^1.1.0:
   version "1.1.0"
   resolved "https://registry.nlark.com/hex-color-regex/download/hex-color-regex-1.1.0.tgz#4c06fccb4602fe2602b3c93df82d7e7dbf1a8a8e"
   integrity sha1-TAb8y0YC/iYCs8k9+C1+fb8aio4=
-
-highlight.js@*:
-  version "11.2.0"
-  resolved "https://registry.nlark.com/highlight.js/download/highlight.js-11.2.0.tgz#a7e3b8c1fdc4f0538b93b2dc2ddd53a40c6ab0f0"
-  integrity sha1-p+O4wf3E8FOLk7LcLd1TpAxqsPA=
 
 highlight.js@^10.7.1:
   version "10.7.3"
@@ -7343,20 +7328,6 @@ shelljs@^0.8.3:
     interpret "^1.0.0"
     rechoir "^0.6.2"
 
-shn-vue-ui@^1.3.19-gac:
-  version "1.3.19-gac"
-  resolved "https://registry.nlark.com/shn-vue-ui/download/shn-vue-ui-1.3.19-gac.tgz#a61555b2a949f1926d5937262c43e14d4c816677"
-  integrity sha1-phVVsqlJ8ZJtWTcmLEPhTUyBZnc=
-  dependencies:
-    core-js "^2.6.5"
-    epic-spinners "^1.1.0"
-    vue "^2.6.6"
-    vue-highlightjs "^1.3.3"
-    vue-router "^3.0.1"
-    vue-status-indicator "^1.2.1"
-    vuewordcloud "^18.7.11"
-    vuex "^3.0.1"
-
 side-channel@^1.0.4:
   version "1.0.4"
   resolved "https://registry.nlark.com/side-channel/download/side-channel-1.0.4.tgz#efce5c8fdc104ee751b25c58d4290011fa5ea2cf"
@@ -8314,13 +8285,6 @@ vue-eslint-parser@^7.0.0:
     lodash "^4.17.21"
     semver "^6.3.0"
 
-vue-highlightjs@^1.3.3:
-  version "1.3.3"
-  resolved "https://registry.npm.taobao.org/vue-highlightjs/download/vue-highlightjs-1.3.3.tgz#29a0d57132fc1ce15cfa61e896918f5b718c5d52"
-  integrity sha1-KaDVcTL8HOFc+mHolpGPW3GMXVI=
-  dependencies:
-    highlight.js "*"
-
 vue-hot-reload-api@^2.3.0:
   version "2.3.4"
   resolved "https://registry.npm.taobao.org/vue-hot-reload-api/download/vue-hot-reload-api-2.3.4.tgz#532955cc1eb208a3d990b3a9f9a70574657e08f2"
@@ -8346,17 +8310,10 @@ vue-loader@^15.9.2:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
-vue-router@^3.0.1, vue-router@^3.2.0:
+vue-router@^3.2.0:
   version "3.5.2"
   resolved "https://registry.nlark.com/vue-router/download/vue-router-3.5.2.tgz?cache=0&sync_timestamp=1628495505697&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fvue-router%2Fdownload%2Fvue-router-3.5.2.tgz#5f55e3f251970e36c3e8d88a7cd2d67a350ade5c"
   integrity sha1-X1Xj8lGXDjbD6NiKfNLWejUK3lw=
-
-vue-status-indicator@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.npm.taobao.org/vue-status-indicator/download/vue-status-indicator-1.2.1.tgz#bb50148c8680264b5a7f800ffb394ea525557b4c"
-  integrity sha1-u1AUjIaAJktaf4AP+zlOpSVVe0w=
-  dependencies:
-    vue "^2.6.10"
 
 vue-style-loader@^4.1.0, vue-style-loader@^4.1.2:
   version "4.1.3"
@@ -8391,7 +8348,7 @@ vue2-datepicker@^3.10.1:
   dependencies:
     date-format-parse "^0.2.7"
 
-vue@^2.6.10, vue@^2.6.11, vue@^2.6.6:
+vue@^2.6.11:
   version "2.6.14"
   resolved "https://registry.nlark.com/vue/download/vue-2.6.14.tgz#e51aa5250250d569a3fbad3a8a5a687d6036e235"
   integrity sha1-5RqlJQJQ1Wmj+606ilpofWA24jU=
@@ -8410,12 +8367,7 @@ vuetify@^2.4.0:
   resolved "https://registry.nlark.com/vuetify/download/vuetify-2.5.8.tgz#a23e6a7e77b77de0744b53cf1e7c9d40efac0635"
   integrity sha1-oj5qfne3feB0S1PPHnydQO+sBjU=
 
-vuewordcloud@^18.7.11:
-  version "18.7.12"
-  resolved "https://registry.npm.taobao.org/vuewordcloud/download/vuewordcloud-18.7.12.tgz#7cd02aafc57315f0548c9b9940f9f5e9de1d07f6"
-  integrity sha1-fNAqr8VzFfBUjJuZQPn16d4dB/Y=
-
-vuex@^3.0.1, vuex@^3.4.0:
+vuex@^3.4.0:
   version "3.6.2"
   resolved "https://registry.nlark.com/vuex/download/vuex-3.6.2.tgz#236bc086a870c3ae79946f107f16de59d5895e71"
   integrity sha1-I2vAhqhww655lG8QfxbeWdWJXnE=

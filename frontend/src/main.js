@@ -6,8 +6,6 @@ import vuetify from './plugins/vuetify'
 import router from './router'
 import store from './store'
 import VueCropper from 'vue-cropper'
-import shnUI from 'shn-vue-ui'
-Vue.use(shnUI)
 Vue.use(VueCropper)
 Vue.config.productionTip = false
 

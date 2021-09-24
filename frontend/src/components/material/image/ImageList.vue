@@ -2,7 +2,44 @@
   <v-app>
     <v-card>
       <v-card-title>
-        <v-row class="p-2">
+        <v-row>
+          <v-col cols="12"
+                 lg="3"
+                 md="4"
+                 sm="6"
+                 xs="12"
+          >
+            <v-text-field
+                v-model="materialName"
+                label="请输入标题"
+                outlined
+                dense
+            >
+              <v-icon
+                  slot="append"
+                  color="blue"
+                  @click="getGraphics"
+              >
+                mdi-magnify
+              </v-icon>
+            </v-text-field>
+          </v-col>
+          <v-col cols="12"
+                 lg="3"
+                 md="4"
+                 sm="6"
+                 xs="12"
+          >
+            <v-select
+                v-model="channel"
+                item-text="name"
+                item-value="id"
+                :items="channelItems"
+                label="选择频道"
+                dense
+                outlined
+            ></v-select>
+          </v-col>
           <v-spacer></v-spacer>
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
@@ -149,11 +186,9 @@
 <script>
 export default {
   name: "ImageList",
-  props: {
-    channel: Number,
-  },
   data() {
     return {
+      channel:0,
       uploadImageDialog: false,
       overlay: false,
       dialog: false,
