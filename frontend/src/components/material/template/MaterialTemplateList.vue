@@ -174,7 +174,7 @@ export default {
   },
   data() {
     return {
-      baseUrl:""
+      baseUrl:"",
       isActive: false,
       templates: [],
       materialName: "",
