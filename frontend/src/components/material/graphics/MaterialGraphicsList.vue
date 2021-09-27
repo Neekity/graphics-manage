@@ -105,12 +105,14 @@
             <v-icon
                 small
                 class="mr-2"
+                color="blue darken-2"
                 @click="edit(item.id)"
             >
               mdi-pencil
             </v-icon>
             <v-icon
                 small
+                color="red darken-2"
                 @click="confirm(item.id)"
             >
               mdi-delete

@@ -9,6 +9,7 @@ type (
 	GraphicsChannelModel interface {
 		ChannelOwner(channelIds []int) ([]GraphicsChannel, error)
 		ChannelList(name string) ([]GraphicsChannel, error)
+		UpdateOrCreate(id int, channelInfo GraphicsChannel) (*GraphicsChannel, error)
 	}
 
 	defaultGraphicsChannelModel struct {
@@ -24,6 +25,14 @@ type (
 		AudienceConfig string        `json:"audience_config" gorm:"column:audience_config;type:longtext;not null;comment:频道听众配置"`                // 频道听众配置
 	}
 )
+
+func (m *defaultGraphicsChannelModel) UpdateOrCreate(id int, channelInfo GraphicsChannel) (*GraphicsChannel, error) {
+	var channel GraphicsChannel
+	if err := m.GormDB.Model(&GraphicsChannel{}).Where("id = ?", id).Assign(channelInfo).FirstOrCreate(&channel).Error; err != nil {
+		return nil, err
+	}
+	return &channel, nil
+}
 
 func (m *defaultGraphicsChannelModel) ChannelList(name string) ([]GraphicsChannel, error) {
 	var channels []GraphicsChannel

@@ -15,11 +15,16 @@ type ApiListData struct {
 	TotalCount int         `json:"totalCount"`
 }
 
+type Audience struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 type StoreChannelRequest struct {
-	Id       int      `json:"id"`
-	Name     string   `json:"name"`
-	Manager  []string `json:"manager"`
-	Audience []string `json:"audience"`
+	Id        int        `json:"id"`
+	Name      string     `json:"name"`
+	Owners    []string   `json:"owners"`
+	Audiences []Audience `json:"audiences"`
 }
 
 type DeleteChanenlRequest struct {
@@ -28,7 +33,6 @@ type DeleteChanenlRequest struct {
 
 type SearchChannelRequest struct {
 	Name string `json:"name"`
-	Page int    `json:"page"`
 }
 
 type StoreMaterialRequest struct {
@@ -120,7 +124,6 @@ type UserInfo struct {
 
 type SearchUserRequest struct {
 	Name string `json:"name"`
-	Page int    `json:"page"`
 }
 
 type AssignRolerRequest struct {

@@ -1,39 +1,32 @@
 <template>
   <v-app>
-    <v-card width="450" class="mx-auto my-2">
+    <v-card width="960" class="mx-auto my-2">
       <v-card-title>
         <v-row>
           <v-col cols="12"
                  sm="6"
           >
             <v-text-field
-                v-model="channelName"
-                label="请输入标题"
+                v-model="userName"
+                label="请输入名称"
                 outlined
                 dense
             >
               <v-icon
                   slot="append"
                   color="blue"
-                  @click="getChannel"
+                  @click="getUsers"
               >
                 mdi-magnify
               </v-icon>
             </v-text-field>
           </v-col>
           <v-spacer></v-spacer>
-          <v-icon
-              class="mr-2"
-              color="blue darken-2"
-              @click="edit(0)"
-          >
-            mdi-plus
-          </v-icon>
         </v-row>
       </v-card-title>
       <v-data-table
           :headers="headers"
-          :items="channelItems"
+          :items="userItems"
           item-key="id"
           outlined
           :footer-props="{
@@ -62,44 +55,45 @@
 
 <script>
 export default {
-  name: "ChannelList",
+  name: "UserList",
   data() {
     return {
       headers: [{
-        text: '频道名称',
+        text: '用户名称',
         align: 'start',
-        sortable: false,
         value: 'name',
       },
-        {text: 'Actions', value: 'actions', sortable: false},
+        {text: '用户邮箱', value: 'email'},
+        {text: '用户电话', value: 'mobile'},
+        {text: '操作', value: 'actions', sortable: false},
       ],
-      channelItems: [],
-      channelName:'',
+      userItems: [],
+      userName:'',
     }
   },
   created() {
-    this.getChannel()
+    this.getUsers()
   },
   methods: {
     edit(id){
       location.href='channel/edit?id='+id;
     },
-    getChannel() {
+    getUsers() {
       this.overlay += 1;
-      this.$axios.post('/backend/channel/list',{name:this.channelName})
+      this.$axios.post('/backend/user',{name:this.userName})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.channelItems = resData.data;
+              this.userItems = resData.data;
             } else {
-              this.$toast('获取频道出错：' + resData.message, {
+              this.$toast('获取用户出错：' + resData.message, {
                 type: 'error',
               });
             }
           })
           .catch(error => {
             console.log(error);
-            this.$toast('获取频道出错：服务器出错！', {
+            this.$toast('获取用户出错：服务器出错！', {
               type: 'error',
               timeout: 2000,
             });

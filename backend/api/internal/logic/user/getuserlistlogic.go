@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"go-project/graphics-manage/backend/common/helper"
 
 	"go-project/graphics-manage/backend/api/internal/svc"
 	"go-project/graphics-manage/backend/api/internal/types"
@@ -24,7 +25,9 @@ func NewGetUserListLogic(ctx context.Context, svcCtx *svc.ServiceContext) GetUse
 }
 
 func (l *GetUserListLogic) GetUserList(req types.SearchUserRequest) (*types.ApiResponse, error) {
-	// todo: add your logic here and delete this line
-
-	return &types.ApiResponse{}, nil
+	users, err := l.svcCtx.UserModel.List(req.Name)
+	if err != nil {
+		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
+	}
+	return (*types.ApiResponse)(helper.ApiSuccess(users)), nil
 }

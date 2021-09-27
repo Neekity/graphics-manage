@@ -1,0 +1,35 @@
+syntax = "v1"
+
+info(
+    title: "Role"
+    desc: "角色"
+    author: "Neekity"
+    email: "tc_huang1995@163.com"
+)
+
+type (
+    SearchRoleRequest {
+        Name string `json:"name"`
+    }
+
+    AssignRolerRequest {
+        Id uint `json:"id"`
+        Name uint `json:"name"`
+        Users []string `json:"users"`
+    }
+)
+
+@server(
+    middleware: Auth,AccessLog
+    group: role
+)
+service graphics-api {
+
+    @handler GetRoleList
+    post /role (SearchRoleRequest) returns (ApiResponse)
+
+    @handler AssignRole
+    post /role/assign (AssignRolerRequest) returns (ApiResponse)
+
+
+}

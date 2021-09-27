@@ -25,6 +25,8 @@ type ServiceContext struct {
 	GraphicsMaterialModel        model.GraphicsMaterialModel
 	GraphicsMessageReceiverModel model.GraphicsMessageReceiverModel
 	GraphicsMessageModel         model.GraphicsMessageModel
+	UserModel                    model.UserModel
+	RoleModel                    model.RoleModel
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -56,5 +58,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		GraphicsMaterialModel:        model.NewGraphicsMaterialModel(gdb),
 		GraphicsMessageReceiverModel: model.NewGraphicsMessageReceiverModel(gdb),
 		GraphicsMessageModel:         model.NewGraphicsMessageModel(gdb),
+		UserModel:                    model.NewUserModel(gdb),
+		RoleModel:                    model.NewRoleModel(gdb),
 	}
 }

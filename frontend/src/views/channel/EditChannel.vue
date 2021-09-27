@@ -1,32 +1,11 @@
 <template>
   <v-app>
-    <v-card width="660px" class="mx-auto my-12">
+    <v-card  width="960px" class="mx-auto my-2">
       <v-card-title>
-        <v-row v-if="channelId">
+        <v-row>
           <v-col cols="12"
-                 lg="6"
-                 md="6"
                  sm="6"
-                 xs="12">
-            <v-select
-                v-model="channel"
-                item-text="name"
-                item-value="id"
-                :items="channelItems"
-                label="频道"
-                :rules="[value => !!value || '请选择定制听众的频道！',]"
-                disabled
-                dense
-                outlined
-            ></v-select>
-          </v-col>
-        </v-row>
-        <v-row v-if="!channelId">
-          <v-col cols="12"
-                 lg="6"
-                 md="6"
-                 sm="6"
-                 xs="12">
+                >
             <v-text-field
                 v-model="channelName"
                 label="频道名称"
@@ -37,7 +16,23 @@
           </v-col>
         </v-row>
       </v-card-title>
-      <v-card-text>
+      <v-card-text class="text-left">
+        <v-row>
+          <v-col
+              cols="12"
+              sm="6"
+          >
+            <v-select
+                v-model="owners"
+                :items="allUsers"
+                chips
+                label="频道创作者"
+                multiple
+                outlined
+                dense
+            ></v-select>
+          </v-col>
+        </v-row>
         <v-row>
           <v-col>
             <v-text-field
@@ -52,14 +47,12 @@
             <v-treeview
                 ref="items"
                 v-model="selection"
-                selection-type="independent"
                 :items="items"
                 selectable
                 return-object
                 dense
                 hoverable
                 :open.sync="open"
-                item-text="text"
                 :search="search"
             ></v-treeview>
           </v-col>
@@ -84,9 +77,9 @@
                       left
                       small
                   >
-                    {{ node.type == 'employee' ? ' mdi-account' : 'mdi-account-multiple' }}
+                    mdi-account
                   </v-icon>
-                  {{ node.text }}
+                  {{ node.name }}
                 </v-chip>
               </v-scroll-x-transition>
             </v-card-text>
@@ -96,8 +89,7 @@
       <v-card-actions>
         <v-btn
             color="success"
-            @click="storeChannelAudience"
-            :disabled="!channel"
+            @click="store"
             class="text-center"
         >
           保存
@@ -117,64 +109,35 @@
 
 export default {
   name: "EditChannel",
-  props: ['channelId'],
   data() {
     return {
       open: [],
+      owners: [],
+      allUsers: [],
+      channelId: parseInt(this.$route.query.id),
       allOpened: false,
       disableChannel: false,
       lastOpen: [],
       overlay: 0,
-      channel: 0,
-      channelName: '0',
-      channelItems: [],
+      channelName: '',
       search: null,
       selection: [],
-      items: [],
+      items: [{id: 0, name: '全选', children: []}],
     }
   },
-  watch: {
-    selection: {
-      handler() {
-        console.log(this.selection)
-      },
-    },
-  },
   created() {
-    this.channel = this.channelId;
-    this.getChannels()
     this.getAllAudience();
   },
   methods: {
-    getChannels() {
-      this.overlay += 1;
-      this.$http.post('/graphics/manage/channel/channels')
-          .then(response => {
-            let resData = response.data;
-            if (resData.code === 0) {
-              this.channelItems = resData.data;
-            } else {
-              this.$toast('获取频道出错：' + resData.message, {
-                type: 'error',
-              });
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            this.$toast('保存出错：服务器出错！', {
-              type: 'error',
-              timeout: 2000,
-            });
-          })
-          .finally(() => this.overlay -= 1);
-    },
     getChannelAudience() {
       this.overlay += 1;
-      this.$http.post('/graphics/manage/channel/audience/data', {channel_id: this.channel})
+      this.$axios.post('/backend/channel/detail', {channel_id: this.channelId})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.selection = resData.data;
+              this.selection = resData.data.audiences;
+              this.channelName = resData.data.name;
+              this.owners = resData.data.owners;
             } else {
               this.$toast('获取频道听众出错：' + resData.message, {
                 type: 'error',
@@ -192,34 +155,45 @@ export default {
     },
     getAllAudience() {
       this.overlay += 1;
-      this.$http.post('/graphics/manage/channel/employees')
+      this.$axios.post('/backend/user',{name: ''})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.items = resData.data;
-              this.getChannelAudience()
+              this.items[0].children = resData.data;
+              const that=this
+              resData.data.forEach(function (element) {
+                that.allUsers.push(element.name)
+              });
+              if (this.channel) {
+                this.getChannelAudience()
+              }
             } else {
-              this.$toast('获取所有听众出错：' + resData.message, {
+              this.$toast('获取所有用户出错：' + resData.message, {
                 type: 'error',
               });
             }
           })
           .catch(error => {
             console.log(error);
-            this.$toast('出错：服务器出错！', {
+            this.$toast('获取所有用户出错：服务器出错！', {
               type: 'error',
               timeout: 2000,
             });
           })
           .finally(() => this.overlay -= 1);
     },
-    storeChannelAudience() {
+    store() {
       this.overlay += 1;
       let receivers = [];
       this.selection.forEach(function (element) {
-        receivers.push({id: element.id, type: element.type, text: element.text})
+        receivers.push({id: element.id, name: element.name})
       });
-      this.$http.post('/graphics/manage/channel/audience/store', {channel_id: this.channel, audiences: receivers})
+      this.$axios.post('/backend/channel/store', {
+        id: this.channelId,
+        name: this.channelName,
+        owners: this.owners,
+        audiences: receivers
+      })
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -227,16 +201,16 @@ export default {
                 type: 'success',
                 timeout: 2000
               });
-              location.href = '/graphics/manage/channel';
+              location.href = '/channel';
             } else {
-              this.$toast('保存频道听众出错：' + resData.message, {
+              this.$toast('保存频道出错：' + resData.message, {
                 type: 'error',
               });
             }
           })
           .catch(error => {
             console.log(error);
-            this.$toast('保存频道听众出错：服务器出错！', {
+            this.$toast('保存频道出错：服务器出错！', {
               type: 'error',
               timeout: 2000,
             });

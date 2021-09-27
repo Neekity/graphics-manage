@@ -9,19 +9,23 @@ info(
 
 type (
     StoreChannelRequest {
-        Id int `json:"id"`
-        Name string `json:"name"`
-        Manager []string `json:"manager"`
-        Audience []string `json:"audience"`
+        Id        int        `json:"id"`
+        Name      string     `json:"name"`
+        Owners    []string   `json:"owners"`
+        Audiences []Audience `json:"audiences"`
     }
 
     DeleteChanenlRequest {
         Id int `json:"id"`
     }
 
+    Audience {
+        Id   int    `json:"id"`
+        Name string `json:"name"`
+    }
+
     SearchChannelRequest {
         Name string `json:"name"`
-        Page int `json:"page"`
     }
 )
 

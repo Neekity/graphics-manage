@@ -2,6 +2,9 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
+	"go-project/graphics-manage/backend/common/helper"
+	"go-project/graphics-manage/backend/model"
 
 	"go-project/graphics-manage/backend/api/internal/svc"
 	"go-project/graphics-manage/backend/api/internal/types"
@@ -24,7 +27,15 @@ func NewStoreChannelLogic(ctx context.Context, svcCtx *svc.ServiceContext) Store
 }
 
 func (l *StoreChannelLogic) StoreChannel(req types.StoreChannelRequest) (*types.ApiResponse, error) {
-	// todo: add your logic here and delete this line
+	audienceConfig, _ := json.Marshal(req.Audiences)
 
-	return &types.ApiResponse{}, nil
+	channel := model.GraphicsChannel{
+		Name:           req.Name,
+		AudienceConfig: string(audienceConfig),
+	}
+	material, err := l.svcCtx.GraphicsChannelModel.UpdateOrCreate(req.Id, channel)
+	if err != nil {
+		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
+	}
+	return (*types.ApiResponse)(helper.ApiSuccess(material)), nil
 }
