@@ -8,8 +8,9 @@ import (
 type (
 	GraphicsMaterialModel interface {
 		FindOne(id int) (*GraphicsMaterial, error)
-		List(name string, Type string) ([]GraphicsMaterial, error)
+		List(name string, Type string, channelId int) ([]GraphicsMaterial, error)
 		UpdateOrCreate(id int, materialInfo GraphicsMaterial) (*GraphicsMaterial, error)
+		Delete(id uint) error
 	}
 
 	defaultGraphicsMaterialModel struct {
@@ -30,6 +31,10 @@ type (
 	}
 )
 
+func (m *defaultGraphicsMaterialModel) Delete(id uint) error {
+	return m.GormDB.Delete(&GraphicsMaterial{ID: id}).Error
+}
+
 func (m *defaultGraphicsMaterialModel) UpdateOrCreate(id int, materialInfo GraphicsMaterial) (*GraphicsMaterial, error) {
 	var material GraphicsMaterial
 	if err := m.GormDB.Model(&GraphicsMaterial{}).Where("id = ?", id).Assign(materialInfo).FirstOrCreate(&material).Error; err != nil {
@@ -38,12 +43,15 @@ func (m *defaultGraphicsMaterialModel) UpdateOrCreate(id int, materialInfo Graph
 	return &material, nil
 }
 
-func (m *defaultGraphicsMaterialModel) List(name string, Type string) ([]GraphicsMaterial, error) {
+func (m *defaultGraphicsMaterialModel) List(name string, Type string, channelId int) ([]GraphicsMaterial, error) {
 	var materials []GraphicsMaterial
 	query := m.GormDB.Table(m.table)
 	query.Scopes(helper.QueryKey(Type, "type", "="))
 	if name != "" {
 		query.Scopes(helper.QueryKey("%"+name+"%", "name", "like"))
+	}
+	if channelId != 0 {
+		query.Scopes(helper.QueryKey(channelId, "channel_id", "="))
 	}
 	if err := query.Find(&materials).Error; err != nil {
 		return nil, err

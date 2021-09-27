@@ -45,7 +45,7 @@ type MaterialImageUploadRequest struct {
 }
 
 type DeleteMaterialRequest struct {
-	Id int `json:"id"`
+	Id uint `json:"id"`
 }
 
 type MaterialDetailRequest struct {
@@ -53,8 +53,9 @@ type MaterialDetailRequest struct {
 }
 
 type SearchMaterialRequest struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name      string `json:"name"`
+	Type      string `json:"type"`
+	ChannelId int    `json:"channel_id"`
 }
 
 type PublishMaterialRequest struct {

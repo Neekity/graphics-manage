@@ -211,26 +211,27 @@ export default {
   },
   methods: {
     upload() {
-      this.overlay = false
+      this.uploadImageDialog = false;
+      this.overlay += 1;
       let formData = new FormData();
       formData.append('graphics_img', this.imageFile, this.imageFile.name);
-      this.$http.post('/graphics/material/image/upload', formData)
+      formData.append('channel_id', this.channel);
+      this.$axios.post('/backend/material/image/upload', formData)
           .then(response => {
-            console.log(JSON.stringify(response.data));
             let resData = response.data;
             if (resData.code === 0) {
-              this.$toast("保存成功！", {
+              this.$toast("上传成功！", {
                 type: 'success',
                 timeout: 2000
               });
               this.getImages()
             } else if (resData.code === 40 || resData.code === 1000004001) {
-              this.$toast('保存出错：' + resData.message + '【' +
+              this.$toast('上传出错：' + resData.message + '【' +
                   resData.data.errors[Object.keys(resData.data.errors)[0]][0] + '】', {
                 type: 'error',
               });
             } else {
-              this.$toast('保存出错：' + resData.message, {
+              this.$toast('上传出错：' + resData.message, {
                 type: 'error',
               });
             }
@@ -242,7 +243,7 @@ export default {
               timeout: 2000,
             });
           })
-          .finally(() => this.overlay = false);
+          .finally(() => this.overlay -= 1);
     },
     preview(url) {
       this.previewImageUrl = url;

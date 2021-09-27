@@ -220,7 +220,7 @@ export default {
   components: {TextTruncate},
   data() {
     return {
-      channel: null,
+      channel: 0,
       isActive: false,
       showTable: false,
       graphics: [],
@@ -228,6 +228,7 @@ export default {
       overlay: false,
       dialog: false,
       deleteId: 0,
+      channelItems:[],
       headers: [{
         text: '标题',
         align: 'start',
@@ -255,7 +256,7 @@ export default {
   methods: {
     getChannel() {
       this.overlay = true;
-      this.$axios.post('/graphics/material/channel')
+      this.$axios.post('/backend/material/channels')
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;
@@ -278,7 +279,7 @@ export default {
     },
     getGraphics() {
       this.overlay = true;
-      this.$axios.post('/backend/material/list', {type: 'graphics', name: this.materialName})
+      this.$axios.post('/backend/material/list', {type: 'graphics', name: this.materialName,channel_id:this.channel})
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;
@@ -300,12 +301,7 @@ export default {
           .finally(() => this.overlay = false);
     },
     edit(id) {
-      this.$route.push({
-        path: '/material/graphics/edit',
-        query: {
-          id: id
-        }
-      });
+      location.href = '/material/graphics/edit?id='+id;
     },
     confirm(id) {
       this.dialog = true;

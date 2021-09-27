@@ -25,7 +25,7 @@ func NewMaterialListLogic(ctx context.Context, svcCtx *svc.ServiceContext) Mater
 }
 
 func (l *MaterialListLogic) MaterialList(req types.SearchMaterialRequest) (*types.ApiResponse, error) {
-	materials, err := l.svcCtx.GraphicsMaterialModel.List(req.Name, req.Type)
+	materials, err := l.svcCtx.GraphicsMaterialModel.List(req.Name, req.Type, req.ChannelId)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

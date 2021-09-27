@@ -22,7 +22,7 @@ type (
     }
 
     DeleteMaterialRequest {
-        Id int `json:"id"`
+        Id uint `json:"id"`
     }
 
     MaterialDetailRequest {
@@ -32,6 +32,7 @@ type (
     SearchMaterialRequest {
         Name string `json:"name"`
         Type string `json:"type"`
+        ChannelId int `json:"channel_id"`
     }
 
     PublishMaterialRequest {
