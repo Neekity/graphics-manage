@@ -14,7 +14,10 @@ type (
 
     AssignRolerRequest {
         Id uint `json:"id"`
-        Roles []string `json:"roles"`
+        CasbinRoles []string `json:"casbin_roles"`
+    }
+    UserRolesRequest {
+        UserId uint `json:"user_id"`
     }
 )
 
@@ -23,12 +26,14 @@ type (
     group: user
 )
 service graphics-api {
-
     @handler GetUserList
     post /user (SearchUserRequest) returns (ApiResponse)
 
     @handler AssignRole
     post /user/role/assign (AssignRolerRequest) returns (ApiResponse)
+
+    @handler UserRoles
+    post /user/roles (UserRolesRequest) returns (ApiResponse)
 
     @handler GetUserInfo
     post /user/info () returns (ApiResponse)

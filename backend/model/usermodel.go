@@ -1,8 +1,11 @@
 package model
 
 import (
+	"github.com/casbin/casbin/v2"
+	"go-project/graphics-manage/backend/common/constant"
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type (
@@ -11,6 +14,8 @@ type (
 		List(name string) ([]User, error)
 		UpdateOrCreate(id int, materialInfo User) (*User, error)
 		Delete(id uint) error
+		GetUserRoles(id uint, enforce *casbin.Enforcer) ([]Role, error)
+		Assign(id uint, casbinRoles []string, enforce *casbin.Enforcer) error
 	}
 
 	defaultUserModel struct {
@@ -29,6 +34,47 @@ type (
 		DeletedAt gorm.DeletedAt
 	}
 )
+
+func (m *defaultUserModel) Assign(id uint, casbinRoles []string, enforce *casbin.Enforcer) error {
+	err := m.GormDB.Transaction(func(tx *gorm.DB) error {
+		if err := enforce.LoadPolicy(); err != nil {
+			return err
+		}
+		if _, err := enforce.RemoveFilteredNamedGroupingPolicy(constant.CasbinDefaultRole, 0, strconv.Itoa(int(id))); err != nil {
+			return err
+		}
+		var rules [][]string
+		for _, role := range casbinRoles {
+			rules = append(rules, []string{strconv.Itoa(int(id)), role})
+		}
+
+		if _, err := enforce.AddNamedGroupingPolicies(constant.CasbinDefaultRole, rules); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return err
+}
+
+func (m *defaultUserModel) GetUserRoles(id uint, enforce *casbin.Enforcer) ([]Role, error) {
+	var roles []Role
+	if err := enforce.LoadPolicy(); err != nil {
+		return nil, err
+	}
+	policies := enforce.GetFilteredNamedGroupingPolicy(constant.CasbinDefaultRole, 0, strconv.Itoa(int(id)))
+	for _, policy := range policies {
+		var role Role
+
+		if err := m.GormDB.Model(&Role{}).Where("casbin_role = ?", policy[1]).First(&role).Error; err != nil {
+			return nil, err
+		}
+
+		roles = append(roles, role)
+	}
+	return roles, nil
+}
 
 func (m *defaultUserModel) Delete(id uint) error {
 	return m.GormDB.Delete(&User{ID: id}).Error

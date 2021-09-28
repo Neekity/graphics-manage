@@ -11,11 +11,10 @@ type (
     StoreChannelRequest {
         Id        int        `json:"id"`
         Name      string     `json:"name"`
-        Owners    []string   `json:"owners"`
         Audiences []Audience `json:"audiences"`
     }
 
-    DeleteChanenlRequest {
+    ChanenlDetailRequest {
         Id int `json:"id"`
     }
 
@@ -38,8 +37,8 @@ service graphics-api {
     @handler StoreChannel
     post /channel/store (StoreChannelRequest) returns (ApiResponse)
 
-    @handler DeleteChannel
-    post /channel/delete (DeleteChanenlRequest) returns (ApiResponse)
+    @handler ChannelDetail
+    post /channel/detail (ChanenlDetailRequest) returns (ApiResponse)
 
 
     @handler ChannelList

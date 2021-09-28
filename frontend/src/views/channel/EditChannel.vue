@@ -18,22 +18,6 @@
       </v-card-title>
       <v-card-text class="text-left">
         <v-row>
-          <v-col
-              cols="12"
-              sm="6"
-          >
-            <v-select
-                v-model="owners"
-                :items="allUsers"
-                chips
-                label="频道创作者"
-                multiple
-                outlined
-                dense
-            ></v-select>
-          </v-col>
-        </v-row>
-        <v-row>
           <v-col>
             <v-text-field
                 v-model="search"
@@ -112,8 +96,6 @@ export default {
   data() {
     return {
       open: [],
-      owners: [],
-      allUsers: [],
       channelId: parseInt(this.$route.query.id),
       allOpened: false,
       disableChannel: false,
@@ -131,13 +113,12 @@ export default {
   methods: {
     getChannelAudience() {
       this.overlay += 1;
-      this.$axios.post('/backend/channel/detail', {channel_id: this.channelId})
+      this.$axios.post('/backend/channel/detail', {id: this.channelId})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.selection = resData.data.audiences;
+              this.selection = JSON.parse(resData.data.audience_config);
               this.channelName = resData.data.name;
-              this.owners = resData.data.owners;
             } else {
               this.$toast('获取频道听众出错：' + resData.message, {
                 type: 'error',
@@ -160,11 +141,7 @@ export default {
             let resData = response.data;
             if (resData.code === 0) {
               this.items[0].children = resData.data;
-              const that=this
-              resData.data.forEach(function (element) {
-                that.allUsers.push(element.name)
-              });
-              if (this.channel) {
+              if (this.channelId) {
                 this.getChannelAudience()
               }
             } else {

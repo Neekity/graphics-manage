@@ -9,6 +9,7 @@ import (
 	menu "go-project/graphics-manage/backend/api/internal/handler/menu"
 	message "go-project/graphics-manage/backend/api/internal/handler/message"
 	oauth "go-project/graphics-manage/backend/api/internal/handler/oauth"
+	role "go-project/graphics-manage/backend/api/internal/handler/role"
 	user "go-project/graphics-manage/backend/api/internal/handler/user"
 	"go-project/graphics-manage/backend/api/internal/svc"
 
@@ -27,8 +28,8 @@ func RegisterHandlers(engine *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 				{
 					Method:  http.MethodPost,
-					Path:    "/channel/delete",
-					Handler: channel.DeleteChannelHandler(serverCtx),
+					Path:    "/channel/detail",
+					Handler: channel.ChannelDetailHandler(serverCtx),
 				},
 				{
 					Method:  http.MethodPost,
@@ -154,8 +155,36 @@ func RegisterHandlers(engine *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 				{
 					Method:  http.MethodPost,
+					Path:    "/user/roles",
+					Handler: user.UserRolesHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
 					Path:    "/user/info",
 					Handler: user.GetUserInfoHandler(serverCtx),
+				},
+			}...,
+		),
+	)
+
+	engine.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.Auth, serverCtx.AccessLog},
+			[]rest.Route{
+				{
+					Method:  http.MethodPost,
+					Path:    "/role",
+					Handler: role.GetRoleListHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/role/store",
+					Handler: role.StoreRoleHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/role/detail",
+					Handler: role.RoleDetailHandler(serverCtx),
 				},
 			}...,
 		),

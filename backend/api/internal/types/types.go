@@ -15,20 +15,19 @@ type ApiListData struct {
 	TotalCount int         `json:"totalCount"`
 }
 
-type Audience struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
-}
-
 type StoreChannelRequest struct {
 	Id        int        `json:"id"`
 	Name      string     `json:"name"`
-	Owners    []string   `json:"owners"`
 	Audiences []Audience `json:"audiences"`
 }
 
-type DeleteChanenlRequest struct {
+type ChanenlDetailRequest struct {
 	Id int `json:"id"`
+}
+
+type Audience struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 type SearchChannelRequest struct {
@@ -127,6 +126,25 @@ type SearchUserRequest struct {
 }
 
 type AssignRolerRequest struct {
-	Id    uint     `json:"id"`
-	Roles []string `json:"roles"`
+	Id          uint     `json:"id"`
+	CasbinRoles []string `json:"casbin_roles"`
+}
+
+type UserRolesRequest struct {
+	UserId uint `json:"user_id"`
+}
+
+type SearchRoleRequest struct {
+	Name string `json:"name"`
+}
+
+type StoreAndAssignRolerRequest struct {
+	Id         uint   `json:"id"`
+	Name       string `json:"name"`
+	CasbinRole string `json:"casbin_role"`
+	UserIds    []uint `json:"user_ids"`
+}
+
+type RoleDetailRequest struct {
+	Id uint `json:"id"`
 }

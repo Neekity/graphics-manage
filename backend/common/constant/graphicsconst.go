@@ -66,8 +66,13 @@ const CasbinPolicy = "p"
  */
 const CasbinPermissionSymbol = "/"
 
-const CasbinPermissionChanenl = "graphics/channel"
+const CasbinChannelWriteRole = "graphics/channel/%d/write"
+const ChannelWriteRoleName = "%s频道写角色"
+const CasbinChannelReadRole = "graphics/channel/%d/read"
+const ChannelReadRoleName = "%s频道读角色"
 
-const CasbinPermissionMaterial = "graphics/material"
+const CasbinChannelMaterialResourceRole = "graphics/channel/%d/material"
+const CasbinChannelMessageResourceRole = "graphics/channel/%d/message"
 
-const CasbinPermissionMessage = "graphics/message"
+const CasbinMessagePolicy = "graphics/message/%d"
+const CasbinMaterialPolicy = "graphics/material/%d"

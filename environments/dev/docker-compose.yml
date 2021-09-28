@@ -25,7 +25,7 @@ services:
       - graphics-nets
   graphics-vue:
     build:
-      context: frontend
+      context: docker/frontend
       args:
         - NODE_VERSION=alpine
         - NPM_REGISTRY=https://registry.npm.taobao.org/
@@ -48,7 +48,7 @@ services:
       - 80
     command: [ "/bin/sh", "-c", "cd toml && air -c .graphics-api.air.toml" ]
     volumes:
-      - ./:/data
+      - ./backend:/data
     depends_on:
       - graphics-beanstalkd-1
       - graphics-beanstalkd-2
@@ -72,6 +72,7 @@ services:
       - "8484:80"
     volumes:
       - ./docker/nginx/:/etc/nginx/conf.d/
+      - ./backend/resource/image/:/data/resource/image/
     networks:
       - graphics-nets
 networks:

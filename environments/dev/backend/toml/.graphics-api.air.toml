@@ -3,7 +3,7 @@ tmp_dir = "tmp"
 
 [build]
   bin = "./tmp/graphics-api -f /data/yaml/graphics-api.yaml"
-  cmd = "go build -o ./tmp/graphics-api /data/service/system/api/system.go"
+  cmd = "go build -o ./tmp/graphics-api /data/api/graphics.go"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor"]
   exclude_file = []

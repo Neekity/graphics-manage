@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+	"go-project/graphics-manage/backend/common/constant"
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
 )
@@ -37,7 +39,23 @@ func (m *defaultGraphicsMaterialModel) Delete(id uint) error {
 
 func (m *defaultGraphicsMaterialModel) UpdateOrCreate(id int, materialInfo GraphicsMaterial) (*GraphicsMaterial, error) {
 	var material GraphicsMaterial
-	if err := m.GormDB.Model(&GraphicsMaterial{}).Where("id = ?", id).Assign(materialInfo).FirstOrCreate(&material).Error; err != nil {
+	err := m.GormDB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&GraphicsMaterial{}).Where("id = ?", id).Assign(materialInfo).FirstOrCreate(&material).Error; err != nil {
+			return err
+		}
+		if id == 0 {
+			casbinModel := GraphicsCasbinRule{
+				Ptype: constant.CasbinResourceRole,
+				V0:    fmt.Sprintf(constant.CasbinMaterialPolicy, material.ID),
+				V1:    fmt.Sprintf(constant.CasbinChannelMaterialResourceRole, material.ChannelID),
+			}
+			if err := tx.Create(&casbinModel).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
 		return nil, err
 	}
 	return &material, nil

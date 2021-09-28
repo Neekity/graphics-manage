@@ -1,32 +1,41 @@
 <template>
   <v-app>
-    <v-card class="mx-auto my-2">
+    <v-card width="960" class="mx-auto my-2">
       <v-card-title>
         <v-row>
           <v-col cols="12"
                  sm="6"
           >
             <v-text-field
-                v-model="userName"
-                label="请输入名称"
+                v-model="searchRoleName"
+                label="请输入名称搜索"
                 outlined
                 dense
             >
               <v-icon
                   slot="append"
                   color="blue"
-                  @click="getUsers"
+                  @click="getRoles"
               >
                 mdi-magnify
               </v-icon>
             </v-text-field>
           </v-col>
           <v-spacer></v-spacer>
+          <v-btn
+              icon
+              color="blue darken-2"
+              @click="roleId=0;showEditDialog=true;"
+          >
+            <v-icon>
+              mdi-plus
+            </v-icon>
+          </v-btn>
         </v-row>
       </v-card-title>
       <v-data-table
           :headers="headers"
-          :items="userItems"
+          :items="roleItems"
           item-key="id"
           outlined
           :footer-props="{
@@ -38,35 +47,47 @@
             }"
       >
         <template v-slot:item.actions="{ item }">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                  icon
-                  v-bind="attrs"
-                  v-on="on"
-                  class="mr-2"
-                  color="blue darken-2"
-                  @click="userId=item.id;showAssignDialog=true;"
-              >
-                <v-icon>
-                  mdi-account-key-outline
-                </v-icon>
-              </v-btn>
-            </template>
-            <span>分配角色</span>
-          </v-tooltip>
+
+          <v-icon
+              small
+              class="mr-2"
+              color="blue darken-2"
+              @click="roleId=item.id;showEditDialog=true;"
+          >
+            mdi-pencil
+          </v-icon>
+
         </template>
       </v-data-table>
     </v-card>
-    <v-dialog v-model="showAssignDialog">
+    <v-dialog v-model="showEditDialog">
       <v-card class="mx-auto">
-        <v-card-title>分配角色至用户</v-card-title>
+        <v-card-title>角色操作</v-card-title>
         <v-card-text>
+          <v-row>
+            <v-col cols="12" md="4" sm="6">
+              <v-text-field
+                  v-model="roleName"
+                  dense
+                  outlined
+                  label="角色名称"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4" sm="6">
+              <v-text-field
+                  v-model="casbinRole"
+                  dense
+                  outlined
+                  label="casbin角色key"
+                  :disabled="!!roleId"
+              ></v-text-field>
+            </v-col>
+          </v-row>
           <v-row class="text-left">
-            <v-col>
+            <v-col md="4" sm="6">
               <v-text-field
                   v-model="search"
-                  label="输入关键字搜索角色"
+                  label="输入关键字搜索用户"
                   clearable
                   dense
                   outlined
@@ -86,7 +107,8 @@
               ></v-treeview>
             </v-col>
             <v-divider vertical></v-divider>
-            <v-col>
+            <v-col md="4" sm="6">
+              <div class="text-h6 pb-2">分配角色至用户</div>
               <v-scroll-x-transition
                   group
                   hide-on-leave
@@ -116,7 +138,7 @@
         <v-card-actions>
           <v-btn
               color="success"
-              @click="assign"
+              @click="store"
               class="text-center"
           >
             保存
@@ -135,67 +157,124 @@
 
 <script>
 export default {
-  name: "UserList",
+  name: "RoleList",
   data() {
     return {
       headers: [{
-        text: '用户名称',
+        text: '角色名称',
         align: 'start',
         value: 'name',
       },
-        {text: '用户邮箱', value: 'email'},
-        {text: '用户电话', value: 'mobile'},
+        {text: 'casbin角色key', value: 'casbin_role', sortable: false},
         {text: '操作', value: 'actions', sortable: false},
       ],
-      userItems: [],
-      userName: '',
-      userId:0,
+      roleItems: [],
+      searchRoleName: '',
+      roleId: 0,
+      showEditDialog: false,
+      overlay: 0,
       open: [],
       allOpened: false,
       lastOpen: [],
       search: null,
       selection: [],
       items: [{id: 0, name: '全选', children: []}],
-      showAssignDialog:false,
+      roleName: "",
+      casbinRole: "",
     }
   },
   watch: {
-    userId: {
+    roleId: {
       handler() {
         this.search=null;
         this.lastOpen=null;
         this.open=null;
         this.allOpened=false;
         this.lastOpen=false;
-        this.getUserRoles();
+        this.getRole();
       }
     }
   },
   created() {
-    this.getUsers();
-    this.getAllRoles();
+    this.getRoles()
+    this.getAllUsers();
   },
   methods: {
-    assign(){
+    getAllUsers() {
       this.overlay += 1;
-      let casbinRoles = [];
+      this.$axios.post('/backend/user', {name: ''})
+          .then(response => {
+            let resData = response.data;
+            if (resData.code === 0) {
+              this.items[0].children = resData.data;
+            } else {
+              this.$toast('获取所有用户出错：' + resData.message, {
+                type: 'error',
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            this.$toast('获取所有用户出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay -= 1);
+    },
+    getRole() {
+      if (this.roleId === 0) {
+        this.roleName = '';
+        this.casbinRole = '';
+        this.selection = [];
+        return;
+      }
+      this.overlay += 1;
+      this.$axios.post('/backend/role/detail', {id: this.roleId})
+          .then(response => {
+            let resData = response.data;
+            if (resData.code === 0) {
+              this.casbinRole = resData.data.casbin_role;
+              this.roleName = resData.data.name;
+              this.selection = resData.data.users;
+            } else {
+              this.$toast('获取角色详情出错：' + resData.message, {
+                type: 'error',
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            this.$toast('获取角色详情出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay -= 1);
+    },
+    store() {
+      this.overlay += 1;
+      let userIds = [];
       this.selection.forEach(function (element) {
-        casbinRoles.push(element.casbin_role)
+        userIds.push(element.id)
       });
-      this.$axios.post('/backend/user/role/assign', {
-        id: this.userId,
-        casbin_roles: casbinRoles,
+      this.$axios.post('/backend/role/store', {
+        id: this.roleId,
+        name: this.roleName,
+        casbin_role: this.casbinRole,
+        user_ids: userIds,
       })
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.$toast("分配成功！", {
+              this.$toast("保存成功！", {
                 type: 'success',
                 timeout: 2000
               });
-              this.showAssignDialog=false;
+              this.getRoles();
+              this.showEditDialog=false;
             } else {
-              this.$toast('分配角色出错：' + resData.message, {
+              this.$toast('保存角色出错：' + resData.message, {
                 type: 'error',
               });
             }
@@ -203,77 +282,6 @@ export default {
           .catch(error => {
             console.log(error);
             this.$toast('保存角色出错：服务器出错！', {
-              type: 'error',
-              timeout: 2000,
-            });
-          })
-          .finally(() => this.overlay -= 1);
-    },
-    getAllRoles() {
-      this.overlay += 1;
-      this.$axios.post('/backend/role', {name: ''})
-          .then(response => {
-            let resData = response.data;
-            if (resData.code === 0) {
-              this.items[0].children = resData.data;
-            } else {
-              this.$toast('获取角色出错：' + resData.message, {
-                type: 'error',
-              });
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            this.$toast('获取角色出错：服务器出错！', {
-              type: 'error',
-              timeout: 2000,
-            });
-          })
-          .finally(() => this.overlay -= 1);
-    },
-    getUserRoles(){
-      if (this.userId === 0) {
-        this.selection = [];
-        return;
-      }
-      this.overlay += 1;
-      this.$axios.post('/backend/user/roles', {user_id: this.userId})
-          .then(response => {
-            let resData = response.data;
-            if (resData.code === 0) {
-              this.selection = resData.data;
-              console.log(this.selection)
-            } else {
-              this.$toast('获取用户角色出错：' + resData.message, {
-                type: 'error',
-              });
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            this.$toast('获取用户角色出错：服务器出错！', {
-              type: 'error',
-              timeout: 2000,
-            });
-          })
-          .finally(() => this.overlay -= 1);
-    },
-    getUsers() {
-      this.overlay += 1;
-      this.$axios.post('/backend/user', {name: this.userName})
-          .then(response => {
-            let resData = response.data;
-            if (resData.code === 0) {
-              this.userItems = resData.data;
-            } else {
-              this.$toast('获取用户出错：' + resData.message, {
-                type: 'error',
-              });
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            this.$toast('获取用户出错：服务器出错！', {
               type: 'error',
               timeout: 2000,
             });
@@ -292,6 +300,28 @@ export default {
         this.allOpened = false;
         this.open = this.lastOpen;
       }
+    },
+    getRoles() {
+      this.overlay += 1;
+      this.$axios.post('/backend/role', {name: this.searchRoleName})
+          .then(response => {
+            let resData = response.data;
+            if (resData.code === 0) {
+              this.roleItems = resData.data;
+            } else {
+              this.$toast('获取角色出错：' + resData.message, {
+                type: 'error',
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            this.$toast('获取角色出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay -= 1);
     },
   }
 }

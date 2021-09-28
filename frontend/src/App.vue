@@ -5,6 +5,7 @@
       <router-link to="/message">已发送</router-link> |
       <router-link to="/channel">频道管理</router-link> |
       <router-link to="/user">用户列表</router-link> |
+      <router-link to="/role">角色列表</router-link> |
     </div>
     <router-view/>
   </div>

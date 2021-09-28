@@ -1,7 +1,8 @@
 Name: graphics-api
 Host: 0.0.0.0
-Port: 8888
-DataSource: root:123456@tcp(127.0.0.1:3306)/htc.oa.com?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai
+Port: 80
+DataSource: root:123456@tcp(172.16.27.50:3306)/graphics?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai
+BaseUrl: http://graphics.com:8484/
 BeanstalkConf:
   - Endpoint: beanstalkd-1:7771
     Tube: tube1

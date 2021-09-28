@@ -527,7 +527,7 @@ export default {
     },
     getImages() {
       this.overlay += 1;
-      this.$axios.post('/backend/material/list', {type: 'image', channel_id: this.channel})
+      this.$axios.post('/backend/material/list', {type: 'image', channel_id: this.channel,name:''})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
