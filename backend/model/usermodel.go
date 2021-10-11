@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/casbin/casbin/v2"
+	"github.com/tal-tech/go-zero/core/logx"
 	"go-project/graphics-manage/backend/common/constant"
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
@@ -16,7 +17,7 @@ type (
 		Delete(id uint) error
 		GetUserRoles(id uint, enforce *casbin.Enforcer) ([]Role, error)
 		Assign(id uint, casbinRoles []string, enforce *casbin.Enforcer) error
-		GetUserInfo(userId uint) (*UserInfo, error)
+		GetUserInfo(userId uint, enforce *casbin.Enforcer) (*UserInfo, error)
 	}
 
 	defaultUserModel struct {
@@ -42,13 +43,30 @@ type (
 	}
 )
 
-func (m *defaultUserModel) GetUserInfo(userId uint) (*UserInfo, error) {
+func (m *defaultUserModel) GetUserInfo(userId uint, enforce *casbin.Enforcer) (*UserInfo, error) {
 	var user User
+	var menuPath []string
+	var access []string
 	if err := m.GormDB.First(&user, userId).Error; err != nil {
 		return nil, err
 	}
+	if err := enforce.LoadPolicy(); err != nil {
+		return nil, err
+	}
+	if err := m.GormDB.Model(&Menu{}).Where("path != ?", "").Pluck("path", &menuPath).Error; err != nil {
+		return nil, err
+	}
+	for _, item := range menuPath {
+		if flag, err := enforce.Enforce(strconv.Itoa(int(userId)), item, constant.CasbinPermissionRead); err != nil {
+			return nil, err
+		} else if flag {
+			access = append(access, item)
+		} else {
+			logx.Error(item, flag, err)
+		}
+	}
 	userInfo := UserInfo{
-		[]string{"1"},
+		access,
 		user,
 	}
 	return &userInfo, nil

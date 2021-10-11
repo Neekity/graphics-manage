@@ -2,6 +2,8 @@ package logic
 
 import (
 	"context"
+	"go-project/graphics-manage/backend/common/helper"
+	"go-project/graphics-manage/backend/model"
 
 	"go-project/graphics-manage/backend/api/internal/svc"
 	"go-project/graphics-manage/backend/api/internal/types"
@@ -24,7 +26,16 @@ func NewStoreMenuLogic(ctx context.Context, svcCtx *svc.ServiceContext) StoreMen
 }
 
 func (l *StoreMenuLogic) StoreMenu(req types.StoreMenuRequest) (*types.ApiResponse, error) {
-	// todo: add your logic here and delete this line
+	menuInfo := model.Menu{
+		Name:     req.Name,
+		Path:     req.Path,
+		Icon:     req.Icon,
+		ParentId: req.ParentId,
+	}
+	role, err := l.svcCtx.MenuModel.UpdateOrCreate(req.Id, menuInfo)
+	if err != nil {
+		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
+	}
 
-	return &types.ApiResponse{}, nil
+	return (*types.ApiResponse)(helper.ApiSuccess(role)), nil
 }

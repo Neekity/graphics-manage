@@ -76,7 +76,7 @@ type StoreMenuRequest struct {
 	Id       uint   `json:"id"`
 	Name     string `json:"name"`
 	ParentId int64  `json:"parent_id"`
-	Uri      string `json:"uri"`
+	Path     string `json:"path"`
 	Icon     string `json:"icon"`
 }
 

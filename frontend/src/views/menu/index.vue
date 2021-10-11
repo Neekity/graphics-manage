@@ -1,112 +1,132 @@
 <template>
   <v-container>
-    <v-dialog
-        v-model="dialog"
-        max-width="800px"
-    >
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn
-            color="primary"
-            dark
-            class="mb-2"
-            v-bind="attrs"
-            v-on="on"
+    <v-card>
+      <v-card-title>
+        <v-spacer></v-spacer>
+        <v-dialog
+            v-model="dialog"
+            max-width="800px"
         >
-          <v-icon>mdi-plus-thick</v-icon>菜单
-        </v-btn>
-      </template>
-      <v-card>
-        <v-card-title>
-          <span class="headline">新增菜单</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col
-                  cols="12"
-                  sm="6"
-                  md="3"
-              >
-                <v-text-field
-                    v-model="editedItem.parent"
-                    label="父级菜单id"
-                ></v-text-field>
-              </v-col>
-              <v-col
-                  cols="12"
-                  sm="6"
-                  md="3"
-              >
-                <v-text-field
-                    v-model="editedItem.name"
-                    label="名称"
-                ></v-text-field>
-              </v-col>
-              <v-col
-                  cols="12"
-                  sm="6"
-                  md="3"
-              >
-                <v-text-field
-                    v-model="editedItem.icon"
-                    label="图标"
-                ></v-text-field>
-              </v-col>
-              <v-col
-                  cols="12"
-                  sm="6"
-                  md="3"
-              >
-                <v-text-field
-                    v-model="editedItem.route"
-                    label="路由"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+                color="primary"
+                dark
+                class="mb-2"
+                v-bind="attrs"
+                v-on="on"
+                icon
+            >
+              <v-icon>mdi-plus-thick</v-icon>
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title>
+              <span class="headline">菜单</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col
+                      cols="12"
+                      sm="6"
+                      md="3"
+                  >
+                    <v-text-field
+                        v-model="editedItem.parent_id"
+                        label="父级菜单id"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                      cols="12"
+                      sm="6"
+                      md="3"
+                  >
+                    <v-text-field
+                        v-model="editedItem.name"
+                        label="名称"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                      cols="12"
+                      sm="6"
+                      md="3"
+                  >
+                    <v-text-field
+                        v-model="editedItem.icon"
+                        label="图标"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                      cols="12"
+                      sm="6"
+                      md="3"
+                  >
+                    <v-text-field
+                        v-model="editedItem.path"
+                        label="路由"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-              color="blue darken-1"
-              text
-              @click="close"
-          >
-            关闭
-          </v-btn>
-          <v-btn
-              color="blue darken-1"
-              text
-              @click="save"
-          >
-            保存
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-treeview
-        v-model="tree"
-        :open="initiallyOpen"
-        :items="items"
-        activatable
-        item-key="name"
-        open-on-click
-    >
-      <template v-slot:prepend="{ item}">
-        <v-icon v-if="!item.icon">
-         mdi-folder
-        </v-icon>
-        <v-icon v-else>
-          {{ item.icon }}
-        </v-icon>
-      </template>
-      <template v-slot:append="{ item}">
-        <v-btn @click="edit(item.id)" >
-          <v-icon>mdi-pencil</v-icon>
-        </v-btn>
-      </template>
-    </v-treeview>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="close"
+              >
+                关闭
+              </v-btn>
+              <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="save"
+              >
+                保存
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-card-title>
+      <v-card-text>
+        <v-treeview
+            :open="initiallyOpen"
+            activatable
+            :items="items"
+            item-text="name"
+            open-on-click
+        >
+          <template v-slot:prepend="{ item}">
+            <v-icon v-if="!item.icon">
+              mdi-folder
+            </v-icon>
+            <v-icon v-else>
+              {{ item.icon }}
+            </v-icon>
+          </template>
+          <template v-slot:append="{ item}">
+            <v-btn icon
+                   color="blue darken-2"
+                   @click="edit(item)">
+              <v-icon >mdi-pencil</v-icon>
+            </v-btn>
+            <v-btn  icon
+                    color="red darken-2"
+                    @click="deleteMenu(item.id)">
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </template>
+        </v-treeview>
+      </v-card-text>
+    </v-card>
+    <v-overlay :value="overlay">
+      <v-progress-circular
+          indeterminate
+          color="primary"
+      ></v-progress-circular>
+    </v-overlay>
   </v-container>
 </template>
 
@@ -114,34 +134,59 @@
 export default {
   data: () => ({
     editedItem: {
-      parent: "",
+      id: 0,
+      parent_id: 0,
       name: "",
       icon: "",
-      route:""
+      path: "",
     },
     defaultItem: {
-      parent: "",
+      id: 0,
+      parent_id: 0,
       name: "",
       icon: "",
-      route:""
+      path: ""
     },
+    initiallyOpen: [1],
     dialog: false,
-    initiallyOpen: ['public'],
-    tree: [],
-    items:[],
+    items: [],
+    overlay: 0,
   }),
   methods: {
-    edit(id) {
-      console.log(id)
+    edit(item) {
+      this.dialog = true;
+      this.editedItem = item;
     },
-    save(){
-      this.overlay = true;
-      this.$graphicsHttp('post', '/menu/edit', this.editedItem).then((response) => {
+    getMenus() {
+      this.overlay += 1;
+      this.$graphicsHttp('post', '/menu/list').then((response) => {
         let resData = response.data;
         if (resData.code === 0) {
-          this.channelTemplates = resData.data;
-          this.destroyEditor();
-          this.$nextTick(() => this.editorInit());
+          this.items = resData.data || [];
+        } else {
+          this.$toast('获取菜单出错：' + resData.message, {
+            type: 'error',
+          });
+        }
+      }).catch(error => {
+        console.log(error);
+        this.$toast('获取菜单出错：服务器出错！', {
+          type: 'error',
+          timeout: 2000,
+        });
+      }).finally(() => {
+        this.overlay -= 1;
+      });
+    },
+    save() {
+      this.overlay = true;
+      this.$graphicsHttp('post', '/menu/store', this.editedItem).then((response) => {
+        let resData = response.data;
+        if (resData.code === 0) {
+          this.$toast('保存菜单成功！', {
+            type: 'success',
+          });
+          this.getMenus();
         } else {
           this.$toast('保存菜单出错：' + resData.message, {
             type: 'error',
@@ -162,9 +207,32 @@ export default {
       this.dialog = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
       })
     },
+    deleteMenu(id) {
+      this.overlay += 1;
+      this.$graphicsHttp('post', '/menu/delete', {id: id}).then((response) => {
+        let resData = response.data;
+        if (resData.code === 0) {
+          this.$toast('删除菜单成功！', {
+            type: 'success',
+          });
+          this.getMenus();
+        } else {
+          this.$toast('删除菜单出错：' + resData.message, {
+            type: 'error',
+          });
+        }
+      }).catch(error => {
+        console.log(error);
+        this.$toast('删除菜单出错：服务器出错！', {
+          type: 'error',
+          timeout: 2000,
+        });
+      }).finally(() => {
+        this.overlay -= 1;
+      });
+    }
   },
   watch: {
     dialog(val) {
@@ -172,11 +240,8 @@ export default {
     },
   },
   created() {
-    this.$graphicsHttp('post', '/menu/list').then((response) => {
-      this.items = response.data;
-    }).catch(error => {
-      console.log(error);
-    });
-  }
+    this.getMenus();
+  },
+
 }
 </script>

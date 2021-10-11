@@ -25,7 +25,7 @@ func NewMenuListLogic(ctx context.Context, svcCtx *svc.ServiceContext) MenuListL
 }
 
 func (l *MenuListLogic) MenuList(userId uint) (*types.ApiResponse, error) {
-	data, err := l.svcCtx.UserModel.GetUserInfo(userId)
+	data, err := l.svcCtx.UserModel.GetUserInfo(userId, l.svcCtx.GraphicsCasbinRuleEnforce)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

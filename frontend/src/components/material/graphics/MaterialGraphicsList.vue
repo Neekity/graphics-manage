@@ -312,7 +312,7 @@ export default {
     deleteGraphics() {
       this.dialog = false;
       this.overlay = true;
-      this.$axios.post('material/delete', {id: this.deleteId})
+      this.$graphicsHttp('post','material/delete', {id: this.deleteId})
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;

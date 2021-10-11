@@ -16,7 +16,7 @@ type (
         Id uint `json:"id"`
         Name string `json:"name"`
         ParentId int64 `json:"parent_id"`
-        Uri string `json:"uri"`
+        Path      string `json:"path"`
         Icon string `json:"icon"`
     }
 )
@@ -34,5 +34,5 @@ service graphics-api {
     post /menu/list () returns (ApiResponse)
 
     @handler StoreMenu
-    post /menu/edit (StoreMenuRequest) returns (ApiResponse)
+    post /menu/store (StoreMenuRequest) returns (ApiResponse)
 }

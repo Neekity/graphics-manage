@@ -7,8 +7,9 @@ import (
 
 type (
 	MenuModel interface {
-		MenuList(permissionNames []string) ([]MenuTree, error)
-		UpdateOrCreateUser(id uint, menuInfo Menu) (*Menu, error)
+		MenuList(menuPath []string) ([]MenuTree, error)
+		UpdateOrCreate(id uint, menuInfo Menu) (*Menu, error)
+		Delete(id uint) error
 	}
 
 	defaultMenuModel struct {
@@ -33,17 +34,21 @@ type (
 	}
 )
 
-func (m *defaultMenuModel) UpdateOrCreateUser(id uint, menuInfo Menu) (*Menu, error) {
+func (m *defaultMenuModel) Delete(id uint) error {
+	return m.GormDB.Delete(&Menu{ID: id}).Error
+}
+
+func (m *defaultMenuModel) UpdateOrCreate(id uint, menuInfo Menu) (*Menu, error) {
 	var menu Menu
 	m.GormDB.Model(&Menu{}).Where("id = ?", id).Assign(menuInfo).FirstOrCreate(&menu)
 	return &menu, nil
 }
 
-func (m *defaultMenuModel) MenuList(permissionNames []string) ([]MenuTree, error) {
+func (m *defaultMenuModel) MenuList(menuPath []string) ([]MenuTree, error) {
 	var parentMenus []Menu
 	var childrenMenus []Menu
 	m.GormDB.Model(&Menu{}).Where("parent_id = ?", 0).Find(&parentMenus)
-	m.GormDB.Model(&Menu{}).Where("`Path` IN ?", permissionNames).Find(&childrenMenus)
+	m.GormDB.Model(&Menu{}).Where("`Path` IN ?", menuPath).Find(&childrenMenus)
 	var menuTrees []MenuTree
 	for _, parentMenu := range parentMenus {
 		var curChildrenMenus []Menu
@@ -52,7 +57,7 @@ func (m *defaultMenuModel) MenuList(permissionNames []string) ([]MenuTree, error
 				curChildrenMenus = append(curChildrenMenus, childrenMenu)
 			}
 		}
-		if helper.InArray(parentMenu.Path, permissionNames) || len(curChildrenMenus) > 0 {
+		if helper.InArray(parentMenu.Path, menuPath) || len(curChildrenMenus) > 0 {
 			menuTrees = append(menuTrees, MenuTree{curChildrenMenus, parentMenu})
 		}
 	}

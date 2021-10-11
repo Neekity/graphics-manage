@@ -202,7 +202,7 @@ export default {
   methods: {
     getAllUsers() {
       this.overlay += 1;
-      this.$axios.post('/backend/user', {name: ''})
+      this.$graphicsHttp('post','user', {name: ''})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -230,7 +230,7 @@ export default {
         return;
       }
       this.overlay += 1;
-      this.$axios.post('/backend/role/detail', {id: this.roleId})
+      this.$graphicsHttp('post','role/detail', {id: this.roleId})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -258,7 +258,7 @@ export default {
       this.selection.forEach(function (element) {
         userIds.push(element.id)
       });
-      this.$axios.post('/backend/role/store', {
+      this.$graphicsHttp('post','role/store', {
         id: this.roleId,
         name: this.roleName,
         casbin_role: this.casbinRole,
@@ -303,7 +303,7 @@ export default {
     },
     getRoles() {
       this.overlay += 1;
-      this.$axios.post('/backend/role', {name: this.searchRoleName})
+      this.$graphicsHttp('post','role', {name: this.searchRoleName})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {

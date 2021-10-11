@@ -99,7 +99,7 @@ func RegisterHandlers(engine *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 				{
 					Method:  http.MethodPost,
-					Path:    "/menu/edit",
+					Path:    "/menu/store",
 					Handler: menu.StoreMenuHandler(serverCtx),
 				},
 			}...,
