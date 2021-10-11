@@ -258,7 +258,7 @@ export default {
   methods: {
     getChannel() {
       this.overlay = true;
-      this.$axios.post('/backend/material/channels')
+      this.$graphicsHttp('post', 'material/channels')
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;
@@ -281,7 +281,7 @@ export default {
     },
     getGraphics() {
       this.overlay = true;
-      this.$axios.post('/backend/material/list', {type: 'graphics', name: this.materialName,channel_id:this.channel})
+      this.$graphicsHttp('post', 'material/list', {type: 'graphics', name: this.materialName,channel_id:this.channel})
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;
@@ -312,7 +312,7 @@ export default {
     deleteGraphics() {
       this.dialog = false;
       this.overlay = true;
-      this.$axios.post('/backend/material/delete', {id: this.deleteId})
+      this.$axios.post('material/delete', {id: this.deleteId})
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;

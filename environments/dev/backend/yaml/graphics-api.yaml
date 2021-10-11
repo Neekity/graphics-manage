@@ -1,8 +1,21 @@
 Name: graphics-api
 Host: 0.0.0.0
 Port: 80
-DataSource: root:123456@tcp(172.16.27.50:3306)/graphics?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai
-BaseUrl: http://graphics.com:8484/
+DataSource:
+UserInfoUrl:
+ClientID:
+ClientSecret:
+Endpoint:
+  AuthURL:
+  TokenURL:
+  AuthStyle: 1
+RedirectURL:
+Scopes:
+  - user.basic
+JwtAuth:
+  AccessSecret:
+  AccessExpire: 604800
+FrontUrl: http://graphics.com:8484/login?token=
 BeanstalkConf:
   - Endpoint: beanstalkd-1:7771
     Tube: tube1

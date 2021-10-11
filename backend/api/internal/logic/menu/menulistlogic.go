@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"go-project/graphics-manage/backend/common/helper"
 
 	"go-project/graphics-manage/backend/api/internal/svc"
 	"go-project/graphics-manage/backend/api/internal/types"
@@ -23,8 +24,13 @@ func NewMenuListLogic(ctx context.Context, svcCtx *svc.ServiceContext) MenuListL
 	}
 }
 
-func (l *MenuListLogic) MenuList() (*types.ApiResponse, error) {
-	// todo: add your logic here and delete this line
+func (l *MenuListLogic) MenuList(userId uint) (*types.ApiResponse, error) {
+	data, err := l.svcCtx.UserModel.GetUserInfo(userId)
+	if err != nil {
+		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
+	}
 
-	return &types.ApiResponse{}, nil
+	menuTrees, err := l.svcCtx.MenuModel.MenuList(data.Access)
+
+	return (*types.ApiResponse)(helper.ApiSuccess(menuTrees)), nil
 }

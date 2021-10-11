@@ -27,6 +27,7 @@ type ServiceContext struct {
 	GraphicsMessageModel         model.GraphicsMessageModel
 	UserModel                    model.UserModel
 	RoleModel                    model.RoleModel
+	MenuModel                    model.MenuModel
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -52,7 +53,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Config:                       c,
 		AccessLog:                    middleware.NewAccessLogMiddleware().Handle,
 		CheckDataPermission:          middleware.NewCheckDataPermissionMiddleware().Handle,
-		Auth:                         middleware.NewAuthMiddleware().Handle,
+		Auth:                         middleware.NewAuthMiddleware(c.JwtAuth.AccessSecret).Handle,
 		GraphicsCasbinRuleEnforce:    e,
 		GraphicsChannelModel:         model.NewGraphicsChannelModel(gdb),
 		GraphicsMaterialModel:        model.NewGraphicsMaterialModel(gdb),
@@ -60,5 +61,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		GraphicsMessageModel:         model.NewGraphicsMessageModel(gdb),
 		UserModel:                    model.NewUserModel(gdb),
 		RoleModel:                    model.NewRoleModel(gdb),
+		MenuModel:                    model.NewMenuModel(gdb),
 	}
 }

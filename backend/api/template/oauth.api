@@ -48,5 +48,5 @@ service graphics-api {
     get /oauth/login () returns ()
 
     @handler LoginCallbackHandler
-    get /oauth/callback () returns ()
+    get /oauth/callback () returns (JwtTokenResponse)
 }

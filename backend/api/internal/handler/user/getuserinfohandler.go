@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/tal-tech/go-zero/rest/httpx"
 	"go-project/graphics-manage/backend/api/internal/logic/user"
@@ -12,7 +13,9 @@ func GetUserInfoHandler(ctx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		l := logic.NewGetUserInfoLogic(r.Context(), ctx)
-		resp, err := l.GetUserInfo()
+		userId, err := strconv.Atoi(r.Header.Get("UserId"))
+		resp, err := l.GetUserInfo(uint(userId))
+
 		if err != nil {
 			httpx.Error(w, err)
 		} else {

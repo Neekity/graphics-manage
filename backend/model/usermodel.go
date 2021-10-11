@@ -12,10 +12,11 @@ type (
 	UserModel interface {
 		FindOne(id int) (*User, error)
 		List(name string) ([]User, error)
-		UpdateOrCreate(id int, materialInfo User) (*User, error)
+		UpdateOrCreate(email string, userInfo User) (*User, error)
 		Delete(id uint) error
 		GetUserRoles(id uint, enforce *casbin.Enforcer) ([]Role, error)
 		Assign(id uint, casbinRoles []string, enforce *casbin.Enforcer) error
+		GetUserInfo(userId uint) (*UserInfo, error)
 	}
 
 	defaultUserModel struct {
@@ -27,13 +28,31 @@ type (
 		ID        uint   `gorm:"column:id;type:uint;primaryKey;autoIncrement;comment:主键id;" json:"id"`
 		Name      string `gorm:"type:string;comment:姓名;size:64;not null;" json:"name"`
 		Email     string `gorm:"type:string;uniqueIndex;comment:邮箱;size:64;not null;" json:"email"`
+		Password  string `gorm:"column:password;->:false;<-:update;<-:create" json:"password,omitempty"` // 密码
 		Mobile    string `gorm:"type:string;comment:手机号;size:16;not null;" json:"mobile"`
 		Avatar    string `gorm:"type:string;comment:头像;size:256;not null;" json:"avatar"`
 		CreatedAt helper.MyTime
 		UpdatedAt helper.MyTime
 		DeletedAt gorm.DeletedAt
 	}
+
+	UserInfo struct {
+		Access []string `json:"access"`
+		User
+	}
 )
+
+func (m *defaultUserModel) GetUserInfo(userId uint) (*UserInfo, error) {
+	var user User
+	if err := m.GormDB.First(&user, userId).Error; err != nil {
+		return nil, err
+	}
+	userInfo := UserInfo{
+		[]string{"1"},
+		user,
+	}
+	return &userInfo, nil
+}
 
 func (m *defaultUserModel) Assign(id uint, casbinRoles []string, enforce *casbin.Enforcer) error {
 	err := m.GormDB.Transaction(func(tx *gorm.DB) error {
@@ -80,9 +99,9 @@ func (m *defaultUserModel) Delete(id uint) error {
 	return m.GormDB.Delete(&User{ID: id}).Error
 }
 
-func (m *defaultUserModel) UpdateOrCreate(id int, userInfo User) (*User, error) {
+func (m *defaultUserModel) UpdateOrCreate(email string, userInfo User) (*User, error) {
 	var material User
-	if err := m.GormDB.Model(&User{}).Where("id = ?", id).Assign(userInfo).FirstOrCreate(&material).Error; err != nil {
+	if err := m.GormDB.Model(&User{}).Where("email = ?", email).Assign(userInfo).FirstOrCreate(&material).Error; err != nil {
 		return nil, err
 	}
 	return &material, nil

@@ -1,35 +1,143 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/material">素材库</router-link> |
-      <router-link to="/message">已发送</router-link> |
-      <router-link to="/channel">频道管理</router-link> |
-      <router-link to="/user">用户列表</router-link> |
-      <router-link to="/role">角色列表</router-link> |
+  <v-app>
+    <div v-if="overlayShow">
+      <router-view v-on:childByValue="childByValue"></router-view>
     </div>
-    <router-view/>
-  </div>
+    <div v-if="!overlayShow">
+      <v-navigation-drawer
+          v-model="drawer"
+          app>
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="title">
+              财务小工具
+            </v-list-item-title>
+            <v-list-item-subtitle>
+              v1.0
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-divider></v-divider>
+
+        <v-list
+            dense
+            nav
+        >
+          <v-list-group
+              v-for="item in items"
+              :key="item.id"
+              v-model="item.active"
+              :prepend-icon="item.icon"
+              no-action
+          >
+            <template v-slot:activator>
+              <v-list-item-content>
+                <v-list-item-title v-text="item.name"></v-list-item-title>
+              </v-list-item-content>
+            </template>
+            <v-list-item
+                v-for="subItem in item.children"
+                :key="subItem.id"
+                link
+                :href="subItem.route"
+            >
+              <v-list-item-icon>
+                <v-icon>{{ subItem.icon }}</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title v-text="subItem.name"></v-list-item-title>
+              </v-list-item-content>
+
+            </v-list-item>
+          </v-list-group>
+        </v-list>
+        <!--  -->
+      </v-navigation-drawer>
+
+      <v-app-bar app>
+        <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+        <v-toolbar-title>{{ title }}</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <div>
+          <v-menu v-if="user.userId"
+                  bottom
+                  min-width="150px"
+                  rounded
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn
+                  icon
+                  v-on="on"
+              >
+                <v-avatar>
+                  <img
+                      :src="user.avatarImgPath"
+                  >
+                </v-avatar>
+              </v-btn>
+            </template>
+            <v-card>
+              <v-list-item-content class="justify-center">
+                <div class="mx-auto text-center">
+                  <h4 class="my-3">{{ user.userName }}</h4>
+                  <v-divider class="my-3"></v-divider>
+                  <v-btn
+                      depressed
+                      rounded
+                      text
+                      @click="logout"
+                  >
+                    退出
+                  </v-btn>
+                </div>
+              </v-list-item-content>
+            </v-card>
+          </v-menu>
+        </div>
+      </v-app-bar><!-- 根据应用组件来调整你的内容 -->
+      <v-main><!-- 给应用提供合适的间距 -->
+        <v-container fluid><!-- 如果使用 vue-router -->
+          <router-view v-on:childByValue="childByValue"></router-view>
+        </v-container>
+      </v-main>
+
+      <v-footer app>
+        <!-- -->
+      </v-footer>
+    </div>
+
+  </v-app>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+<script>
+export default {
+  name: 'App',
+  data: () => ({
+    title: "",
+    drawer: null,
+    overlayShow: false,
+    items: [],
+    right: null,
+    user: {}
+  }),
+  methods: {
+    childByValue: function (childValue, overlayShow = false) {
+      this.title = childValue
+      this.overlayShow = overlayShow
+    },
+    logout() {
+      this.$store.dispatch('handleLogout', {}).then(() => {
+        this.$router.push({
+          path: '/login'
+        });
+      });
+    },
+  },
+  mounted() {
+    this.items = this.$store.state.user.menu;
+    this.user = this.$store.state.user;
+    console.log(this.user)
+  },
 }
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
-</style>
+</script>

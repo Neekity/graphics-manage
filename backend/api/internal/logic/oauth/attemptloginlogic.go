@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"golang.org/x/oauth2"
 
 	"github.com/tal-tech/go-zero/core/logx"
 	"go-project/graphics-manage/backend/api/internal/svc"
@@ -21,8 +22,6 @@ func NewAttemptLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) Attem
 	}
 }
 
-func (l *AttemptLoginLogic) AttemptLogin() error {
-	// todo: add your logic here and delete this line
-
-	return nil
+func (l *AttemptLoginLogic) AttemptLogin() string {
+	return l.svcCtx.Config.AuthCodeURL("state", oauth2.AccessTypeOffline)
 }

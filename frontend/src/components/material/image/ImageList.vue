@@ -11,14 +11,14 @@
           >
             <v-text-field
                 v-model="materialName"
-                label="请输入标题"
+                label="请输入名称搜索"
                 outlined
                 dense
             >
               <v-icon
                   slot="append"
                   color="blue"
-                  @click="getGraphics"
+                  @click="getImages"
               >
                 mdi-magnify
               </v-icon>
@@ -188,15 +188,18 @@ export default {
   name: "ImageList",
   data() {
     return {
-      channel:0,
+      channel: 0,
       uploadImageDialog: false,
-      overlay: false,
+      overlay: 0,
       dialog: false,
       imageFile: null,
       previewImageUrl: "",
       isImageActive: null,
       images: [],
       transparent: 'rgba(255, 255, 255, 0)',
+      materialName: "",
+      channelItems: [],
+
     }
   },
   watch: {
@@ -206,10 +209,36 @@ export default {
       },
     },
   },
+  created() {
+    this.getChannel();
+  },
   mounted() {
     this.getImages()
   },
   methods: {
+    getChannel() {
+      this.overlay += 1;
+      this.graphicsHttp('post', '/backend/material/channels')
+          .then(response => {
+            console.log(JSON.stringify(response.data));
+            let resData = response.data;
+            if (resData.code === 0) {
+              this.channelItems = resData.data;
+            } else {
+              this.$toast('获取频道出错：' + resData.message, {
+                type: 'error',
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            this.$toast('获取频道出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay -= 1);
+    },
     upload() {
       this.uploadImageDialog = false;
       this.overlay += 1;
@@ -250,7 +279,7 @@ export default {
       this.dialog = true;
     },
     deleteImage(id) {
-      this.$http.post('/graphics/material/delete', {id: id})
+      this.graphicsHttp('post', '/backend/material/delete', {id: id})
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;
@@ -273,30 +302,31 @@ export default {
               timeout: 2000,
             });
           })
-          .finally(() => this.overlay = false);
+          .finally(() => this.overlay -= 1);
     },
     getImages() {
-      this.overlay = true;
-      this.$http.post('/graphics/material/list', {type: 'image', channel_id: this.channel})
-          .then(response => {
-            console.log(JSON.stringify(response.data));
-            let resData = response.data;
-            if (resData.code === 0) {
-              this.images = resData.data;
-            } else {
-              this.$toast('获取图片出错：' + resData.message, {
-                type: 'error',
-              });
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            this.$toast('保存出错：服务器出错！', {
-              type: 'error',
-              timeout: 2000,
-            });
-          })
-          .finally(() => this.overlay = false);
+      this.overlay += 1;
+      this.graphicsHttp('post', '/backend/material/list', {
+        type: 'image',
+        channel_id: this.channel,
+        name: this.materialName
+      }).then(response => {
+        console.log(JSON.stringify(response.data));
+        let resData = response.data;
+        if (resData.code === 0) {
+          this.images = resData.data;
+        } else {
+          this.$toast('获取图片出错：' + resData.message, {
+            type: 'error',
+          });
+        }
+      }).catch(error => {
+        console.log(error);
+        this.$toast('获取图片出错：服务器出错！', {
+          type: 'error',
+          timeout: 2000,
+        });
+      }).finally(() => this.overlay -= 1);
 
     },
   },

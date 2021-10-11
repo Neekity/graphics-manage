@@ -10,24 +10,24 @@ import (
 	"github.com/tal-tech/go-zero/core/logx"
 )
 
-type GetUserInfoLogic struct {
+type GetRoleListLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewGetUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) GetUserInfoLogic {
-	return GetUserInfoLogic{
+func NewGetRoleListLogic(ctx context.Context, svcCtx *svc.ServiceContext) GetRoleListLogic {
+	return GetRoleListLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *GetUserInfoLogic) GetUserInfo(userId uint) (*types.ApiResponse, error) {
-	data, err := l.svcCtx.UserModel.GetUserInfo(userId)
+func (l *GetRoleListLogic) GetRoleList(req types.SearchRoleRequest) (*types.ApiResponse, error) {
+	roles, err := l.svcCtx.RoleModel.List(req.Name)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}
-	return (*types.ApiResponse)(helper.ApiSuccess(data)), nil
+	return (*types.ApiResponse)(helper.ApiSuccess(roles)), nil
 }

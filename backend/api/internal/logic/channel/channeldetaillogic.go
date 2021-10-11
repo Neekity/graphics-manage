@@ -10,22 +10,22 @@ import (
 	"github.com/tal-tech/go-zero/core/logx"
 )
 
-type GetUserInfoLogic struct {
+type ChannelDetailLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewGetUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) GetUserInfoLogic {
-	return GetUserInfoLogic{
+func NewChannelDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) ChannelDetailLogic {
+	return ChannelDetailLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *GetUserInfoLogic) GetUserInfo(userId uint) (*types.ApiResponse, error) {
-	data, err := l.svcCtx.UserModel.GetUserInfo(userId)
+func (l *ChannelDetailLogic) ChannelDetail(req types.ChanenlDetailRequest) (*types.ApiResponse, error) {
+	data, err := l.svcCtx.GraphicsChannelModel.FindOne(req.Id)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

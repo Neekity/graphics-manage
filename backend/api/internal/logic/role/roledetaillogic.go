@@ -10,22 +10,22 @@ import (
 	"github.com/tal-tech/go-zero/core/logx"
 )
 
-type GetUserInfoLogic struct {
+type RoleDetailLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewGetUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) GetUserInfoLogic {
-	return GetUserInfoLogic{
+func NewRoleDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) RoleDetailLogic {
+	return RoleDetailLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *GetUserInfoLogic) GetUserInfo(userId uint) (*types.ApiResponse, error) {
-	data, err := l.svcCtx.UserModel.GetUserInfo(userId)
+func (l *RoleDetailLogic) RoleDetail(req types.RoleDetailRequest) (*types.ApiResponse, error) {
+	data, err := l.svcCtx.RoleModel.FindOne(req.Id, l.svcCtx.GraphicsCasbinRuleEnforce)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}
