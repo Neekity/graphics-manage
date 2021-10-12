@@ -6,7 +6,7 @@
           <v-col cols="12"
                  lg="3"
                  md="4"
-                 sm="6"
+                 sm="5"
                  xs="12"
           >
             <v-text-field
@@ -27,7 +27,7 @@
           <v-col cols="12"
                  lg="3"
                  md="4"
-                 sm="6"
+                 sm="5"
                  xs="12"
           >
             <v-select
@@ -218,9 +218,8 @@ export default {
   methods: {
     getChannel() {
       this.overlay += 1;
-      this.graphicsHttp('post', '/backend/material/channels')
+      this.$graphicsHttp('post', '/material/channels')
           .then(response => {
-            console.log(JSON.stringify(response.data));
             let resData = response.data;
             if (resData.code === 0) {
               this.channelItems = resData.data;
@@ -245,7 +244,7 @@ export default {
       let formData = new FormData();
       formData.append('graphics_img', this.imageFile, this.imageFile.name);
       formData.append('channel_id', this.channel);
-      this.$axios.post('/backend/material/image/upload', formData)
+      this.$graphicsHttp('post','/material/image/upload', formData)
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -279,9 +278,8 @@ export default {
       this.dialog = true;
     },
     deleteImage(id) {
-      this.graphicsHttp('post', '/backend/material/delete', {id: id})
+      this.$graphicsHttp('post', '/material/delete', {id: id})
           .then(response => {
-            console.log(JSON.stringify(response.data));
             let resData = response.data;
             if (resData.code === 0) {
               this.$toast('删除图片成功！' + resData.message, {
@@ -306,12 +304,11 @@ export default {
     },
     getImages() {
       this.overlay += 1;
-      this.graphicsHttp('post', '/backend/material/list', {
+      this.$graphicsHttp('post', '/material/list', {
         type: 'image',
         channel_id: this.channel,
         name: this.materialName
       }).then(response => {
-        console.log(JSON.stringify(response.data));
         let resData = response.data;
         if (resData.code === 0) {
           this.images = resData.data;

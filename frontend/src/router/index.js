@@ -89,7 +89,7 @@ const routes = [
         name: 'Login',
         meta: {
             title: '登录',
-            hideInMenu: true
+            hideNav: true
         },
         component: () => import(/* webpackChunkName: "about" */ '../views/login/oauth.vue')
     },
@@ -124,23 +124,17 @@ const setActiveMenu = function (to) {
     if (to.path === '/') {
         return;
     }
-    const menuList=store.state.user.menu;
-    console.log(menuList)
+    const menuList = store.state.user.menu;
     for (let i = 0; i < menuList.length; i++) {
         let skip = false;
         if (menuList[i].children) {
             for (let j = 0; j < menuList[i].children.length; j++) {
                 if (menuList[i].children[j].path === to.path) {
-                    store.state.user.menu[i].children[j].active=true;
-                    store.state.user.menu[i].active=true;
+                    store.state.user.activeParentMenuId = i;
+                    store.state.user.activeSubMenuId = j;
                     skip = true;
                     break;
                 }
-            }
-        } else {
-            if (menuList[i].to === to.path) {
-                store.state.user.menu[i].active=true;
-                break;
             }
         }
         if (skip) {
@@ -155,6 +149,11 @@ Vue.prototype.$loginPage = loginPage;
 
 router.beforeEach((to, from, next) => {
     const accessList = store.state.user.access;
+    if (to.meta.hideNav) {
+        store.state.user.showNav = false;
+    } else {
+        store.state.user.showNav = true;
+    }
     if (to.meta.authCheck) {
         if (store.state.user.hasGetInfo && store.state.user.token && getToken() && getToken() === store.state.user.token) {
             //查看是否有权限

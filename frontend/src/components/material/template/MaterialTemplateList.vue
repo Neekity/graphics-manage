@@ -6,7 +6,7 @@
           <v-col cols="12"
                  lg="3"
                  md="4"
-                 sm="6"
+                 sm="5"
                  xs="12"
           >
             <v-text-field
@@ -27,7 +27,7 @@
           <v-col cols="12"
                  lg="3"
                  md="4"
-                 sm="6"
+                 sm="5"
                  xs="12"
           >
             <v-select
@@ -40,7 +40,6 @@
                 outlined
             ></v-select>
           </v-col>
-
           <v-spacer></v-spacer>
           <v-tooltip bottom v-if="showTable">
             <template v-slot:activator="{ on, attrs }">
@@ -82,12 +81,59 @@
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
             </template>
-            <span>新建图文素材</span>
+            <span>新建模版素材</span>
           </v-tooltip>
         </v-row>
       </v-card-title>
       <v-card-text>
+        <v-data-table
+            v-if="showTable"
+            :headers="headers"
+            :items="templates"
+            item-key="id"
+            class="elevation-0"
+            :footer-props="{
+              showFirstLastPage: true,
+              firstIcon: 'mdi-arrow-collapse-left',
+              lastIcon: 'mdi-arrow-collapse-right',
+              prevIcon: 'mdi-minus',
+              nextIcon: 'mdi-plus'
+            }"
+        >
+          <template v-slot:item.actions="{ item }">
+            <v-icon
+                small
+                class="mr-2"
+                color="blue darken-2"
+                @click="edit(item.id)"
+            >
+              mdi-pencil
+            </v-icon>
+            <v-icon
+                small
+                color="red darken-2"
+                @click="confirm(item.id)"
+            >
+              mdi-delete
+            </v-icon>
+          </template>
+          <template v-slot:no-data>
+            <v-btn
+                color="primary"
+                @click="initialize"
+            >
+              Reset
+            </v-btn>
+          </template>
+          <template v-slot:item.name="{ item }">
+            <TextTruncate :text="item.name"></TextTruncate>
+          </template>
+          <template v-slot:item.abstract="{ item }">
+            <TextTruncate :text="item.abstract"></TextTruncate>
+          </template>
+        </v-data-table>
         <v-lazy
+            v-if="!showTable"
             v-model="isActive"
             :options="{
           threshold: .5
@@ -115,7 +161,7 @@
                   </div>
                   <v-divider></v-divider>
                   <v-card-actions class="pt-0">
-                    <div>更新于 {{ item.update_at }}</div>
+                    <div>更新于 {{ item.updated_at }}</div>
                     <v-spacer></v-spacer>
                     <v-btn icon color="blue darken-2" @click="edit(item.id)">
                       <v-icon>mdi-pencil</v-icon>
@@ -168,17 +214,16 @@ import TinymceViewer from "../../tinymce/TinymceViewer";
 export default {
   name: "MaterialTemplateList",
   components: {TinymceViewer},
-  props: {
-    channel: [String, Number],
-    skinUrl: String,
-  },
   data() {
     return {
-      baseUrl:"",
+      channel: 0,
+      baseUrl: 'tinymce/',
       isActive: false,
+      showTable: false,
       templates: [],
+      channelItems: [],
       materialName: "",
-      overlay: false,
+      overlay: 0,
       dialog: false,
       deleteId: 0,
     }
@@ -192,11 +237,37 @@ export default {
   },
   mounted() {
     this.getTemplates()
+    this.getChannel()
   },
   methods: {
+    getChannel() {
+      this.overlay += 1;
+      this.$graphicsHttp('post', 'material/channels')
+          .then(response => {
+            console.log(JSON.stringify(response.data));
+            let resData = response.data;
+            if (resData.code === 0) {
+              this.channelItems = resData.data;
+            } else {
+              this.$toast('获取频道出错：' + resData.message, {
+                type: 'error',
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            this.$toast('保存出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay -= 1);
+    },
     getTemplates() {
-      this.overlay = true;
-      this.$http.post('/graphics/material/list', {type: 'template', channel_id: this.channel, name: this.materialName})
+      this.overlay += 1;
+      this.$graphicsHttp('post', '/material/list', {
+        type: 'template', channel_id: this.channel, name: this.materialName
+      })
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;
@@ -215,10 +286,10 @@ export default {
               timeout: 2000,
             });
           })
-          .finally(() => this.overlay = false);
+          .finally(() => this.overlay -= 1);
     },
     edit(id) {
-      location.href = "/graphics/material/template/" + id + "/edit"
+      location.href = '/material/graphics/edit?id=' + id;
     },
     confirm(id) {
       this.dialog = true;
@@ -226,10 +297,9 @@ export default {
     },
     deleteTemplate() {
       this.dialog = false;
-      this.overlay = true;
-      this.$http.post('/graphics/material/delete', {id: this.deleteId})
+      this.overlay += 1;
+      this.$graphicsHttp('post', '/material/delete', {id: this.deleteId})
           .then(response => {
-            console.log(JSON.stringify(response.data));
             let resData = response.data;
             if (resData.code === 0) {
               this.$toast("删除成功！", {
@@ -245,12 +315,12 @@ export default {
           })
           .catch(error => {
             console.log(error);
-            this.$toast('保存出错：服务器出错！', {
+            this.$toast('删除数据出错：服务器出错！', {
               type: 'error',
               timeout: 2000,
             });
           })
-          .finally(() => this.overlay = false);
+          .finally(() => this.overlay -= 1);
     },
   },
 }

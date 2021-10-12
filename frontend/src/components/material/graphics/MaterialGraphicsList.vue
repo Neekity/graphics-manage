@@ -6,7 +6,7 @@
           <v-col cols="12"
                  lg="3"
                  md="4"
-                 sm="6"
+                 sm="5"
                  xs="12"
           >
             <v-text-field
@@ -27,7 +27,7 @@
           <v-col cols="12"
                  lg="3"
                  md="4"
-                 sm="6"
+                 sm="5"
                  xs="12"
           >
             <v-select
@@ -227,10 +227,10 @@ export default {
       showTable: false,
       graphics: [],
       materialName: "",
-      overlay: false,
+      overlay: 0,
       dialog: false,
       deleteId: 0,
-      channelItems:[],
+      channelItems: [],
       headers: [{
         text: '标题',
         align: 'start',
@@ -257,10 +257,9 @@ export default {
   },
   methods: {
     getChannel() {
-      this.overlay = true;
+      this.overlay += 1;
       this.$graphicsHttp('post', 'material/channels')
           .then(response => {
-            console.log(JSON.stringify(response.data));
             let resData = response.data;
             if (resData.code === 0) {
               this.channelItems = resData.data;
@@ -277,13 +276,14 @@ export default {
               timeout: 2000,
             });
           })
-          .finally(() => this.overlay = false);
+          .finally(() => this.overlay -= 1);
     },
     getGraphics() {
-      this.overlay = true;
-      this.$graphicsHttp('post', 'material/list', {type: 'graphics', name: this.materialName,channel_id:this.channel})
+      this.overlay += 1;
+      this.$graphicsHttp('post', 'material/list', {
+        type: 'graphics', name: this.materialName, channel_id: this.channel
+      })
           .then(response => {
-            console.log(JSON.stringify(response.data));
             let resData = response.data;
             if (resData.code === 0) {
               this.graphics = resData.data;
@@ -300,10 +300,10 @@ export default {
               timeout: 2000,
             });
           })
-          .finally(() => this.overlay = false);
+          .finally(() => this.overlay -= 1);
     },
     edit(id) {
-      location.href = '/material/graphics/edit?id='+id;
+      location.href = '/material/graphics/edit?id=' + id;
     },
     confirm(id) {
       this.dialog = true;
@@ -311,10 +311,9 @@ export default {
     },
     deleteGraphics() {
       this.dialog = false;
-      this.overlay = true;
-      this.$graphicsHttp('post','material/delete', {id: this.deleteId})
+      this.overlay += 1;
+      this.$graphicsHttp('post', 'material/delete', {id: this.deleteId})
           .then(response => {
-            console.log(JSON.stringify(response.data));
             let resData = response.data;
             if (resData.code === 0) {
               this.$toast("删除成功！", {
@@ -330,12 +329,12 @@ export default {
           })
           .catch(error => {
             console.log(error);
-            this.$toast('保存出错：服务器出错！', {
+            this.$toast('删除数据出错：服务器出错！', {
               type: 'error',
               timeout: 2000,
             });
           })
-          .finally(() => this.overlay = false);
+          .finally(() => this.overlay -= 1);
     },
   },
 }

@@ -8,6 +8,7 @@ import (
 	"template/oauth.api"
 	"template/user.api"
 	"template/role.api"
+	"template/login.api"
 )
 
 info(

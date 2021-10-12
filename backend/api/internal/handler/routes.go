@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	channel "go-project/graphics-manage/backend/api/internal/handler/channel"
+	login "go-project/graphics-manage/backend/api/internal/handler/login"
 	material "go-project/graphics-manage/backend/api/internal/handler/material"
 	menu "go-project/graphics-manage/backend/api/internal/handler/menu"
 	message "go-project/graphics-manage/backend/api/internal/handler/message"
@@ -188,5 +189,20 @@ func RegisterHandlers(engine *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 			}...,
 		),
+	)
+
+	engine.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/login",
+				Handler: login.LoginHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/logout",
+				Handler: login.LogoutHandler(serverCtx),
+			},
+		},
 	)
 }

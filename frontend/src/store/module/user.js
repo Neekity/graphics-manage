@@ -27,8 +27,8 @@ export const getGraphicsHttp = () => {
     return httpRequest;
 }
 
-const logout = () => {
-    return graphicsHttp('get', '/logout')
+const logout = (token) => {
+    return graphicsHttp('post', '/logout',{token:token})
 };
 
 const {cookieExpires} = config;
@@ -49,9 +49,11 @@ export default {
         userId: '',
         avatarImgPath: '',
         token: getToken(),
-        activeParentMenu:{},
+        activeParentMenuId:0,
+        activeSubMenuId:0,
         access: [],
         hasGetInfo: false,
+        showNav: true,
         roles: [],
         rolesValues: [],
         subjects: [],
@@ -113,6 +115,7 @@ export default {
                     commit('setAccess', [])
                     commit('setHasGetInfo', false)
                     commit('setAvatar', "")
+                    commit('setMenu', {})
                     localStorage.clear();
                     // console.log('access clear');
                     resolve()
