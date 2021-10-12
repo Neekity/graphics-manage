@@ -32,6 +32,7 @@
                       md="3"
                   >
                     <v-text-field
+                        type="number"
                         v-model="editedItem.parent_id"
                         label="父级菜单id"
                     ></v-text-field>
@@ -110,11 +111,11 @@
             <v-btn icon
                    color="blue darken-2"
                    @click="edit(item)">
-              <v-icon >mdi-pencil</v-icon>
+              <v-icon>mdi-pencil</v-icon>
             </v-btn>
-            <v-btn  icon
-                    color="red darken-2"
-                    @click="deleteMenu(item.id)">
+            <v-btn icon
+                   color="red darken-2"
+                   @click="deleteMenu(item.id)">
               <v-icon>mdi-delete</v-icon>
             </v-btn>
           </template>
@@ -179,7 +180,10 @@ export default {
       });
     },
     save() {
-      this.overlay = true;
+      this.overlay += 1;
+      console.log(this.editedItem)
+      this.editedItem.parent_id = parseInt(this.editedItem.parent_id)
+      console.log(this.editedItem)
       this.$graphicsHttp('post', '/menu/store', this.editedItem).then((response) => {
         let resData = response.data;
         if (resData.code === 0) {
@@ -205,9 +209,6 @@ export default {
     },
     close() {
       this.dialog = false
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
-      })
     },
     deleteMenu(id) {
       this.overlay += 1;

@@ -1,8 +1,9 @@
-import store, {getToken} from "../store";
+import store from "../store";
 import goTo from "vuetify/es5/services/goto";
 import {apiUrlDomain} from "../plugins/axios";
 import VueRouter from 'vue-router';
 import Vue from 'vue'
+import {getToken} from "../store/module/user"
 
 Vue.use(VueRouter);
 
@@ -12,7 +13,7 @@ const routes = [
         name: 'MaterialLibrary',
         meta: {
             title: '素材库',
-            authCheck: false
+            authCheck: true
         },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
@@ -97,7 +98,7 @@ const routes = [
         name: 'Menu',
         meta: {
             title: '菜单',
-            authCheck: false
+            authCheck: true
         },
         component: () => import(/* webpackChunkName: "about" */ '../views/menu/index.vue')
     },
@@ -119,6 +120,34 @@ const RouterConfig = {
     },
 };
 
+const setActiveMenu = function (to) {
+    if (to.path === '/') {
+        return;
+    }
+    const menuList=store.state.user.menu;
+    console.log(menuList)
+    for (let i = 0; i < menuList.length; i++) {
+        let skip = false;
+        if (menuList[i].children) {
+            for (let j = 0; j < menuList[i].children.length; j++) {
+                if (menuList[i].children[j].path === to.path) {
+                    store.state.user.menu[i].children[j].active=true;
+                    store.state.user.menu[i].active=true;
+                    skip = true;
+                    break;
+                }
+            }
+        } else {
+            if (menuList[i].to === to.path) {
+                store.state.user.menu[i].active=true;
+                break;
+            }
+        }
+        if (skip) {
+            break;
+        }
+    }
+}
 
 const router = new VueRouter(RouterConfig)
 const loginPage = apiUrlDomain + '/oauth/login';
@@ -130,18 +159,21 @@ router.beforeEach((to, from, next) => {
         if (store.state.user.hasGetInfo && store.state.user.token && getToken() && getToken() === store.state.user.token) {
             //查看是否有权限
             if (accessList.indexOf(to.path) > -1) {
+                setActiveMenu(to);
                 next()
             } else if (to.path !== '/login') {
                 next({
                     path: '/401'
                 })
             } else {
+                setActiveMenu(to);
                 next()
             }
         } else {// 未登录需要登录
             window.location.href = loginPage;
         }
     } else {
+        setActiveMenu(to);
         next()
     }
 })

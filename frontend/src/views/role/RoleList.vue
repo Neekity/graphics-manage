@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-card width="960" class="mx-auto my-2">
+    <v-card class="my-2">
       <v-card-title>
         <v-row>
           <v-col cols="12"

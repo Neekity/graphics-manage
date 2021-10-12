@@ -3,7 +3,7 @@
 import axios from "axios";
 import Vue from 'vue';
 import config from '../config';
-import {getToken} from "../store";
+import {getToken} from "../store/module/user";
 
 const _axios = axios.create({
     baseUrl: config.baseUrl,

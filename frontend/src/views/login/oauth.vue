@@ -13,7 +13,7 @@
 </template>
 <script>
 import {mapActions} from 'vuex';
-import {getGraphicsHttp} from "../../store";
+import {getGraphicsHttp} from "../../store/module/user";
 
 export default {
   data() {
@@ -24,20 +24,14 @@ export default {
     }
   },
   created() {
-    this.$emit('childByValue', this.subTitle, this.overlayShow)
     if (this.$store.state.user.token && !getGraphicsHttp('token').token) {
       this.$router.push({
-        path: '/readme'
+        path: '/example'
       })
     } else if (getGraphicsHttp('token').token) {
       this.showLoginForm = false;
       this.handleSubmit();
-    } else {
-      console.log(12354);
     }
-  },
-  mounted() {
-
   },
   methods: {
     ...mapActions([

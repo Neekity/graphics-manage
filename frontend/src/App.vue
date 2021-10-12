@@ -24,7 +24,7 @@
             v-for="item in items"
             :key="item.id"
             v-model="item.active"
-            :prepend-icon="item.icon"
+            :prepend-icon="item.icon || 'mdi-folder'"
             no-action
         >
           <template v-slot:activator>
@@ -36,7 +36,8 @@
               v-for="subItem in item.children"
               :key="subItem.id"
               link
-              :href="subItem.route"
+              :input-value="subItem.active"
+              :href="subItem.path"
           >
             <v-list-item-icon>
               <v-icon>{{ subItem.icon }}</v-icon>
@@ -93,9 +94,7 @@
       </div>
     </v-app-bar><!-- 根据应用组件来调整你的内容 -->
     <v-main><!-- 给应用提供合适的间距 -->
-      <v-container fluid><!-- 如果使用 vue-router -->
-        <router-view v-on:childByValue="childByValue"></router-view>
-      </v-container>
+        <router-view></router-view>
     </v-main>
 
     <v-footer app>
@@ -110,16 +109,12 @@ export default {
   data: () => ({
     title: "",
     drawer: null,
-    overlayShow: false,
+    activeParentMenu: null,
     items: [],
     right: null,
     user: {}
   }),
   methods: {
-    childByValue: function (childValue, overlayShow = false) {
-      this.title = childValue
-      this.overlayShow = overlayShow
-    },
     logout() {
       this.$store.dispatch('handleLogout', {}).then(() => {
         this.$router.push({
@@ -131,7 +126,6 @@ export default {
   mounted() {
     this.items = this.$store.state.user.menu;
     this.user = this.$store.state.user;
-    console.log(this.user)
   },
 }
 </script>

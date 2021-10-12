@@ -10,12 +10,6 @@ import VueCropper from 'vue-cropper'
 Vue.use(VueCropper)
 Vue.config.productionTip = false
 
-const setMenuToLocal = function (item, submenu) {
-    localStorage.setItem('menuItem', item);
-    localStorage.setItem('submenuActive', submenu);
-};
-Vue.prototype.setMenuToLocal = setMenuToLocal;
-
 new Vue({
     vuetify,
     router: router,
