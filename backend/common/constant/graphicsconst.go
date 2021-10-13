@@ -71,6 +71,8 @@ const ChannelWriteRoleName = "%s频道写角色"
 const CasbinChannelReadRole = "graphics/channel/%d/read"
 const ChannelReadRoleName = "%s频道读角色"
 
+const ChannelRole = "graphics/channel/%d"
+
 const CasbinChannelMaterialResourceRole = "graphics/channel/%d/material"
 const CasbinChannelMessageResourceRole = "graphics/channel/%d/message"
 

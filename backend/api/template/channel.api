@@ -9,9 +9,10 @@ info(
 
 type (
     StoreChannelRequest {
-        Id        int        `json:"id"`
-        Name      string     `json:"name"`
+        Id int `json:"id"`
+        Name string `json:"name"`
         Audiences []Audience `json:"audiences"`
+        Owners []Owners `json:"owners"`
     }
 
     ChanenlDetailRequest {
@@ -19,7 +20,12 @@ type (
     }
 
     Audience {
-        Id   int    `json:"id"`
+        Id int `json:"id"`
+        Name string `json:"name"`
+    }
+
+    Owners {
+        Id int `json:"id"`
         Name string `json:"name"`
     }
 

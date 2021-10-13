@@ -25,7 +25,7 @@ func NewChannelDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) Chan
 }
 
 func (l *ChannelDetailLogic) ChannelDetail(req types.ChanenlDetailRequest) (*types.ApiResponse, error) {
-	data, err := l.svcCtx.GraphicsChannelModel.FindOne(req.Id)
+	data, err := l.svcCtx.GraphicsChannelModel.FindOne(req.Id, l.svcCtx.GraphicsCasbinRuleEnforce)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

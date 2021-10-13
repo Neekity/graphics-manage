@@ -19,6 +19,7 @@ type StoreChannelRequest struct {
 	Id        int        `json:"id"`
 	Name      string     `json:"name"`
 	Audiences []Audience `json:"audiences"`
+	Owners    []Owners   `json:"owners"`
 }
 
 type ChanenlDetailRequest struct {
@@ -26,6 +27,10 @@ type ChanenlDetailRequest struct {
 }
 
 type Audience struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+type Owners struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`
 }

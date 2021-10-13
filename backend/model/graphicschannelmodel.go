@@ -1,18 +1,21 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/casbin/casbin/v2"
 	"go-project/graphics-manage/backend/common/constant"
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type (
 	GraphicsChannelModel interface {
 		ChannelOwner(channelIds []int) ([]GraphicsChannel, error)
 		ChannelList(name string) ([]GraphicsChannel, error)
-		UpdateOrCreate(id int, channelInfo GraphicsChannel) (*GraphicsChannel, error)
-		FindOne(id int) (*GraphicsChannel, error)
+		UpdateOrCreate(id int, channelInfo GraphicsChannel, owners []ChannelOwner, enforce *casbin.Enforcer) (*GraphicsChannel, error)
+		FindOne(id int, enforce *casbin.Enforcer) (*ChannelDetail, error)
 	}
 
 	defaultGraphicsChannelModel struct {
@@ -27,17 +30,55 @@ type (
 		UpdatedAt      helper.MyTime `json:"updated_at" gorm:"column:updated_at;type:timestamp;not null;default:CURRENT_TIMESTAMP;comment:更新时间"` // 更新时间
 		AudienceConfig string        `json:"audience_config" gorm:"column:audience_config;type:longtext;not null;comment:频道听众配置"`                // 频道听众配置
 	}
+
+	ChannelDetail struct {
+		ChannelOwners string `json:"channel_owners"`
+		Name          string `json:"name"`
+		Audiences     string `json:"audiences"`
+	}
+
+	ChannelOwner struct {
+		Id   int    `json:"id"`
+		Name string `json:"name"`
+	}
 )
 
-func (m *defaultGraphicsChannelModel) FindOne(id int) (*GraphicsChannel, error) {
+func (m *defaultGraphicsChannelModel) FindOne(id int, enforce *casbin.Enforcer) (*ChannelDetail, error) {
 	var channel GraphicsChannel
 	if err := m.GormDB.First(&channel, id).Error; err != nil {
 		return nil, err
 	}
-	return &channel, nil
+	if err := enforce.LoadPolicy(); err != nil {
+		return nil, err
+	}
+	policy := enforce.GetFilteredNamedGroupingPolicy(constant.CasbinDefaultRole,
+		1, fmt.Sprintf(constant.ChannelRole, channel.ID))
+	var channelOwners []ChannelOwner
+	for _, item := range policy {
+		var user User
+		userId, err := strconv.Atoi(item[0])
+		if err != nil {
+			return nil, err
+		}
+		m.GormDB.Model(&User{}).First(&user, userId)
+		channelOwners = append(channelOwners, ChannelOwner{
+			Id:   userId,
+			Name: user.Name,
+		})
+	}
+	channelOwnerByte, err := json.Marshal(channelOwners)
+	if err != nil {
+		return nil, err
+	}
+	channelDetail := ChannelDetail{
+		Audiences:     channel.AudienceConfig,
+		Name:          channel.Name,
+		ChannelOwners: string(channelOwnerByte),
+	}
+	return &channelDetail, nil
 }
 
-func (m *defaultGraphicsChannelModel) UpdateOrCreate(id int, channelInfo GraphicsChannel) (*GraphicsChannel, error) {
+func (m *defaultGraphicsChannelModel) UpdateOrCreate(id int, channelInfo GraphicsChannel, owners []ChannelOwner, enforce *casbin.Enforcer) (*GraphicsChannel, error) {
 	var channel GraphicsChannel
 	err := m.GormDB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&GraphicsChannel{}).Where("id = ?", id).Assign(channelInfo).FirstOrCreate(&channel).Error; err != nil {
@@ -87,7 +128,20 @@ func (m *defaultGraphicsChannelModel) UpdateOrCreate(id int, channelInfo Graphic
 				return err
 			}
 		}
-
+		if err := enforce.LoadPolicy(); err != nil {
+			return err
+		}
+		if _, err := enforce.RemoveFilteredNamedGroupingPolicy(constant.CasbinDefaultRole,
+			1, fmt.Sprintf(constant.ChannelRole, channel.ID)); err != nil {
+			return err
+		}
+		var rules [][]string
+		for _, item := range owners {
+			rules = append(rules, []string{strconv.Itoa(item.Id), fmt.Sprintf(constant.ChannelRole, channel.ID)})
+		}
+		if _, err := enforce.AddNamedGroupingPolicies(constant.CasbinDefaultRole, rules); err != nil {
+			return err
+		}
 		return nil
 	})
 	if err != nil {

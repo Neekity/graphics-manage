@@ -35,7 +35,14 @@ func (l *StoreChannelLogic) StoreChannel(req types.StoreChannelRequest) (*types.
 		Name:           req.Name,
 		AudienceConfig: string(audienceConfig),
 	}
-	channel, err := l.svcCtx.GraphicsChannelModel.UpdateOrCreate(req.Id, channelInfo)
+	var channelOwners []model.ChannelOwner
+	for _, item := range req.Owners {
+		channelOwners = append(channelOwners, model.ChannelOwner{
+			Id:   item.Id,
+			Name: item.Name,
+		})
+	}
+	channel, err := l.svcCtx.GraphicsChannelModel.UpdateOrCreate(req.Id, channelInfo, channelOwners, l.svcCtx.GraphicsCasbinRuleEnforce)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

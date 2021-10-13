@@ -20,42 +20,96 @@
         <v-row>
           <v-col>
             <v-text-field
-                v-model="search"
+                v-model="searchAudience"
                 label="输入关键字搜索听众"
                 clearable
                 dense
                 outlined
-                @input="handleSearch"
+                @input="handleSearchAudience"
                 clear-icon="mdi-close-circle-outline"
             ></v-text-field>
             <v-treeview
-                ref="items"
-                v-model="selection"
-                :items="items"
+                ref="audienceItems"
+                v-model="audienceSelection"
+                :items="audienceItems"
                 selectable
                 return-object
                 dense
                 hoverable
-                :open.sync="open"
-                :search="search"
+                :open.sync="audienceOpen"
+                :search="searchAudience"
             ></v-treeview>
           </v-col>
           <v-divider vertical></v-divider>
           <v-col>
             <v-card-text>
+              <div class="text-h5" >听众</div>
               <v-scroll-x-transition
                   group
                   hide-on-leave
               >
                 <v-chip
-                    v-for="(node, i) in selection"
+                    v-for="(node, i) in audienceSelection"
                     :key="i"
                     color="primary"
                     outlined
                     small
                     close
                     class="ma-1"
-                    @click:close="selection.splice(i,1)"
+                    @click:close="audienceSelection.splice(i,1)"
+                >
+                  <v-icon
+                      left
+                      small
+                  >
+                    mdi-account
+                  </v-icon>
+                  {{ node.name }}
+                </v-chip>
+              </v-scroll-x-transition>
+            </v-card-text>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <v-text-field
+                v-model="searchChannelOwner"
+                label="输入关键字搜索频道拥有者"
+                clearable
+                dense
+                outlined
+                @input="handleSearchChannelOwners"
+                clear-icon="mdi-close-circle-outline"
+            ></v-text-field>
+            <v-treeview
+                ref="channelOwnerItems"
+                v-model="channelOwnerSelection"
+                :items="channelOwnerItems"
+                selectable
+                return-object
+                dense
+                hoverable
+                :open.sync="channelOwnerOpen"
+                :search="searchChannelOwner"
+            ></v-treeview>
+          </v-col>
+          <v-divider vertical></v-divider>
+          <v-col>
+            <v-card-text>
+              <div class="text-h5" >频道拥有者</div>
+              <v-scroll-x-transition
+                  group
+                  hide-on-leave
+              >
+                <v-chip
+                    v-for="(node, i) in channelOwnerSelection"
+                    :key="i"
+                    color="primary"
+                    outlined
+                    small
+                    close
+                    class="ma-1"
+                    @click:close="channelOwnerSelection.splice(i,1)"
                 >
                   <v-icon
                       left
@@ -95,39 +149,46 @@ export default {
   name: "EditChannel",
   data() {
     return {
-      open: [],
+      channelOwnerOpen: [],
+      audienceOpen: [],
       channelId: parseInt(this.$route.query.id),
-      allOpened: false,
+      channelOwnerAllOpened: false,
+      audienceAllOpened: false,
       disableChannel: false,
-      lastOpen: [],
+      audienceLastOpen: [],
+      channelOwnerLastOpen: [],
       overlay: 0,
       channelName: '',
-      search: null,
-      selection: [],
-      items: [{id: 0, name: '全选', children: []}],
+      searchChannelOwner: null,
+      searchAudience: null,
+      channelOwnerSelection: [],
+      audienceSelection: [],
+      audienceItems: [{id: 0, name: '全选', children: []}],
+      channelOwnerItems: [{id: 0, name: '全选', children: []}],
     }
   },
   created() {
     this.getAllAudience();
   },
   methods: {
-    getChannelAudience() {
+    getChannelDetail() {
       this.overlay += 1;
       this.$graphicsHttp('post','/channel/detail', {id: this.channelId})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.selection = JSON.parse(resData.data.audience_config);
+              this.audienceSelection = JSON.parse(resData.data.audiences);
+              this.channelOwnerSelection = JSON.parse(resData.data.channel_owners);
               this.channelName = resData.data.name;
             } else {
-              this.$toast('获取频道听众出错：' + resData.message, {
+              this.$toast('获取频道信息出错：' + resData.message, {
                 type: 'error',
               });
             }
           })
           .catch(error => {
             console.log(error);
-            this.$toast('获取频道听众出错：服务器出错！', {
+            this.$toast('获取频道信息出错：服务器出错！', {
               type: 'error',
               timeout: 2000,
             });
@@ -140,9 +201,10 @@ export default {
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.items[0].children = resData.data;
+              this.audienceItems[0].children = resData.data;
+              this.channelOwnerItems[0].children = resData.data;
               if (this.channelId) {
-                this.getChannelAudience()
+                this.getChannelDetail()
               }
             } else {
               this.$toast('获取所有用户出错：' + resData.message, {
@@ -161,15 +223,19 @@ export default {
     },
     store() {
       this.overlay += 1;
-      let receivers = [];
-      this.selection.forEach(function (element) {
-        receivers.push({id: element.id, name: element.name})
+      let audiences = [];
+      let owners = [];
+      this.audienceSelection.forEach(function (element) {
+        audiences.push({id: element.id, name: element.name})
+      });
+      this.channelOwnerSelection.forEach(function (element) {
+        owners.push({id: element.id, name: element.name})
       });
       this.$graphicsHttp('post','/channel/store', {
         id: this.channelId,
         name: this.channelName,
-        owners: this.owners,
-        audiences: receivers
+        owners: owners,
+        audiences: audiences
       })
           .then(response => {
             let resData = response.data;
@@ -194,17 +260,30 @@ export default {
           })
           .finally(() => this.overlay -= 1);
     },
-    handleSearch: function (val) {
+    handleSearchAudience: function (val) {
       if (val) {
-        if (!this.allOpened) {
-          this.lastOpen = this.open;
-          this.allOpened = true;
-          this.$refs.items.updateAll(true);
+        if (!this.audienceAllOpened) {
+          this.audienceLastOpen = this.open;
+          this.audienceAllOpened = true;
+          this.$refs.audienceItems.updateAll(true);
         }
       } else {
-        this.$refs.items.updateAll(false);
-        this.allOpened = false;
-        this.open = this.lastOpen;
+        this.$refs.audienceItems.updateAll(false);
+        this.audienceAllOpened = false;
+        this.audienceOpen = this.audienceLastOpen;
+      }
+    },
+    handleSearchChannelOwners: function (val) {
+      if (val) {
+        if (!this.channelOwnerAllOpened) {
+          this.channelOwnerLastOpen = this.open;
+          this.channelOwnerAllOpened = true;
+          this.$refs.channelOwnerItems.updateAll(true);
+        }
+      } else {
+        this.$refs.channelOwnerItems.updateAll(false);
+        this.channelOwnerAllOpened = false;
+        this.channelOwnerOpen = this.channelOwnerLastOpen;
       }
     }
   },
