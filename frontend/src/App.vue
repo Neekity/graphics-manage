@@ -139,8 +139,10 @@ export default {
   },
   mounted() {
     this.user = this.$store.state.user;
-    this.menuActive();
     this.showNav = this.$store.state.user.showNav;
+    if (this.showNav){
+      this.menuActive();
+    }
   },
 }
 </script>

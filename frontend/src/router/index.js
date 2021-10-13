@@ -121,15 +121,17 @@ const RouterConfig = {
 };
 
 const setActiveMenu = function (to) {
-    if (to.path === '/') {
+    let path = '/'+(to.path.split('/')[1] || '')
+    if (path === '/') {
         return;
     }
+
     const menuList = store.state.user.menu;
     for (let i = 0; i < menuList.length; i++) {
         let skip = false;
         if (menuList[i].children) {
             for (let j = 0; j < menuList[i].children.length; j++) {
-                if (menuList[i].children[j].path === to.path) {
+                if (menuList[i].children[j].path === path) {
                     store.state.user.activeParentMenuId = i;
                     store.state.user.activeSubMenuId = j;
                     skip = true;

@@ -4,6 +4,8 @@ import (
 	"context"
 	"go-project/graphics-manage/backend/api/internal/svc"
 	"go-project/graphics-manage/backend/api/internal/types"
+	"go-project/graphics-manage/backend/common/helper"
+	"go-project/graphics-manage/backend/model"
 
 	"github.com/tal-tech/go-zero/core/logx"
 )
@@ -23,7 +25,19 @@ func NewStoreMaterialLogic(ctx context.Context, svcCtx *svc.ServiceContext) Stor
 }
 
 func (l *StoreMaterialLogic) StoreMaterial(req types.StoreMaterialRequest) (*types.ApiResponse, error) {
-	// todo: add your logic here and delete this line
+	material := model.GraphicsMaterial{
+		Type:      req.Type,
+		Name:      req.Name,
+		Content:   req.Content,
+		ChannelID: req.ChannelId,
+		URL:       req.Url,
+		Abstract:  req.Abstract,
+	}
 
-	return &types.ApiResponse{}, nil
+	menu, err := l.svcCtx.GraphicsMaterialModel.UpdateOrCreate(req.Id, material)
+	if err != nil {
+		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
+	}
+
+	return (*types.ApiResponse)(helper.ApiSuccess(menu)), nil
 }

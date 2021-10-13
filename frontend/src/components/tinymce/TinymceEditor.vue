@@ -70,7 +70,6 @@ export default {
         placeholder: '请在此输入正文内容',
         link_default_protocol: "https",
         default_link_target: "_blank",
-        autosave_ask_before_unload:true,
         toolbar_sticky: true,
         branding: false, // 去水印
         elementpath: false, // 禁用编辑器底部的状态栏
@@ -85,9 +84,8 @@ export default {
           let formData = new FormData();
           formData.append('graphics_img', file, file.name);
           formData.append('channel_id',_this.channel);
-          _this.$http.post('/graphics/material/owner/image/upload', formData)
+          _this.$graphicsHttp('post','/material/image/upload', formData)
               .then(response => {
-                console.log(JSON.stringify(response.data));
                 let resData = response.data;
                 if (resData.code === 0) {
                   success(resData.data.url)

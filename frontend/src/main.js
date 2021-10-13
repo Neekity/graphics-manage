@@ -6,7 +6,9 @@ import vuetify from './plugins/vuetify'
 import router from './router'
 import store from './store'
 import VueCropper from 'vue-cropper'
+import DatePicker from 'vue2-datepicker'
 
+Vue.use(DatePicker)
 Vue.use(VueCropper)
 Vue.config.productionTip = false
 

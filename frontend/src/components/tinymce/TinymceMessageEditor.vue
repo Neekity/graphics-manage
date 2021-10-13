@@ -93,12 +93,10 @@ export default {
           let formData = new FormData();
           formData.append('graphics_img', file, file.name);
           formData.append('channel_id', _this.channel);
-          _this.$http.post('/graphics/material/owner/image/upload', formData)
+          _this.$graphicsHttp('post','/material/image/upload', formData)
               .then(response => {
-                console.log(JSON.stringify(response.data));
                 let resData = response.data;
                 if (resData.code === 0) {
-                  this.$emit('getImages');
                   success(resData.data.url)
                 } else {
                   fail('上传失败：' + resData.message)
@@ -135,6 +133,7 @@ export default {
   },
   components: {Editor},
   mounted() {
+    console.log(this.init.templates)
     tinymce.init({})
   },
 }

@@ -77,7 +77,7 @@
                   v-on="on"
                   icon
                   color="blue darken-2"
-                  href="/material/create"
+                  href="/material/graphics/edit?id=0"
               >
                 <v-icon>mdi-plus</v-icon>
               </v-btn>

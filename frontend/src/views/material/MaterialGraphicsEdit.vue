@@ -359,7 +359,7 @@ export default {
   components: {TinymceMessageEditor},
   data() {
     return {
-      baseUrl: 'tinymce/',
+      baseUrl: '/tinymce/',
       uploadImageDialog: false,
       imageFile: null,
       audiencesAllOpened: false,
@@ -397,9 +397,9 @@ export default {
     channel: {
       handler() {
         if (this.channel) {
-          // this.getChannelTemplates();
-          // this.getImages()
-          // this.getAllReceivers();
+          this.getChannelTemplates();
+          this.getImages()
+          this.getChannelAudience();
         }
       },
     },
@@ -417,11 +417,19 @@ export default {
     },
     getChannelTemplates() {
       this.overlay += 1;
-      this.$axios.post('/backend/material/templates', {channel_id: this.channel})
+      this.$graphicsHttp('post', '/material/list', {type: 'template', channel_id: this.channel, name: ""})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.channelTemplates = resData.data;
+              this.channelTemplates = [];
+              for (let i = 0; i < resData.data.length; i++) {
+                this.channelTemplates.push({
+                      title: resData.data[i].name,
+                      description: resData.data[i].abstract,
+                      content: resData.data[i].content,
+                    }
+                )
+              }
               this.destroyEditor();
               this.$nextTick(() => this.editorInit());
             } else {
@@ -480,22 +488,23 @@ export default {
     storeAndPublish() {
       this.store(true);
     },
-    getAllReceivers() {
+    getChannelAudience() {
       this.overlay += 1;
-      this.$axios.post('/backend/material/receivers', {channel_id: this.channel})
+      this.$graphicsHttp('post', '/channel/detail', {id: this.channel})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.audiencesTree = resData.data.audiences;
+              this.selection = JSON.parse(resData.data.audience_config);
+              this.channelName = resData.data.name;
             } else {
-              this.$toast('获取所有用户出错：' + resData.message, {
+              this.$toast('获取频道听众出错：' + resData.message, {
                 type: 'error',
               });
             }
           })
           .catch(error => {
             console.log(error);
-            this.$toast('获取所有用户出错：服务器出错！', {
+            this.$toast('获取频道听众出错：服务器出错！', {
               type: 'error',
               timeout: 2000,
             });
@@ -505,7 +514,7 @@ export default {
 
     getChannel() {
       this.overlay += 1;
-      this.$axios.post('/backend/material/channels')
+      this.$graphicsHttp('post', '/material/channels')
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -527,7 +536,7 @@ export default {
     },
     getImages() {
       this.overlay += 1;
-      this.$axios.post('/backend/material/list', {type: 'image', channel_id: this.channel,name:''})
+      this.$graphicsHttp('post', '/material/list', {type: 'image', channel_id: this.channel, name: ''})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -553,7 +562,7 @@ export default {
         return;
       }
       this.overlay += 1;
-      this.$axios.post('/backend/material/detail', {id: this.materialId})
+      this.$graphicsHttp('post', '/material/detail', {id: this.materialId})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -580,7 +589,7 @@ export default {
     },
     store(showPublish = false) {
       this.overlay += 1;
-      this.$axios.post('/backend/material/store', {
+      this.$graphicsHttp('post', '/material/store', {
         name: this.materialName,
         content: this.content,
         abstract: this.abstract,
@@ -631,7 +640,7 @@ export default {
         receivers.push({id: element.id, type: element.type, name: element.text})
       });
 
-      this.$axios.post('/backend/material/publish', {
+      this.$graphicsHttp('post', '/material/publish', {
         id: this.materialId,
         receivers: receivers,
         channel_id: this.channel,

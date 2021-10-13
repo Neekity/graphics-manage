@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-card width="450" class="mx-auto my-2">
+    <v-card class="my-2">
       <v-card-title>
         <v-row>
           <v-col cols="12"
@@ -86,7 +86,7 @@ export default {
     },
     getChannel() {
       this.overlay += 1;
-      this.$axios.post('/backend/channel/list',{name:this.channelName})
+      this.$graphicsHttp('post','/channel/list',{name:this.channelName})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {

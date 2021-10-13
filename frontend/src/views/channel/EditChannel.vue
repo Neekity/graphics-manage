@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-card  width="960px" class="mx-auto my-2">
+    <v-card class="my-2">
       <v-card-title>
         <v-row>
           <v-col cols="12"
@@ -113,7 +113,7 @@ export default {
   methods: {
     getChannelAudience() {
       this.overlay += 1;
-      this.$axios.post('/backend/channel/detail', {id: this.channelId})
+      this.$graphicsHttp('post','/channel/detail', {id: this.channelId})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -136,7 +136,7 @@ export default {
     },
     getAllAudience() {
       this.overlay += 1;
-      this.$axios.post('/backend/user',{name: ''})
+      this.$graphicsHttp('post','/user',{name: ''})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -165,7 +165,7 @@ export default {
       this.selection.forEach(function (element) {
         receivers.push({id: element.id, name: element.name})
       });
-      this.$axios.post('/backend/channel/store', {
+      this.$graphicsHttp('post','/channel/store', {
         id: this.channelId,
         name: this.channelName,
         owners: this.owners,

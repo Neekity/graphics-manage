@@ -32,10 +32,10 @@ func (l *StoreMenuLogic) StoreMenu(req types.StoreMenuRequest) (*types.ApiRespon
 		Icon:     req.Icon,
 		ParentId: req.ParentId,
 	}
-	role, err := l.svcCtx.MenuModel.UpdateOrCreate(req.Id, menuInfo)
+	menu, err := l.svcCtx.MenuModel.UpdateOrCreate(req.Id, menuInfo)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}
 
-	return (*types.ApiResponse)(helper.ApiSuccess(role)), nil
+	return (*types.ApiResponse)(helper.ApiSuccess(menu)), nil
 }
