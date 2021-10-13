@@ -10,6 +10,7 @@ import (
 	menu "go-project/graphics-manage/backend/api/internal/handler/menu"
 	message "go-project/graphics-manage/backend/api/internal/handler/message"
 	oauth "go-project/graphics-manage/backend/api/internal/handler/oauth"
+	permission "go-project/graphics-manage/backend/api/internal/handler/permission"
 	role "go-project/graphics-manage/backend/api/internal/handler/role"
 	user "go-project/graphics-manage/backend/api/internal/handler/user"
 	"go-project/graphics-manage/backend/api/internal/svc"
@@ -204,5 +205,28 @@ func RegisterHandlers(engine *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: login.LogoutHandler(serverCtx),
 			},
 		},
+	)
+
+	engine.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.Auth, serverCtx.AccessLog},
+			[]rest.Route{
+				{
+					Method:  http.MethodPost,
+					Path:    "/permission",
+					Handler: permission.GetPermissionListHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/permission/store",
+					Handler: permission.StorePermissionHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/permission/detail",
+					Handler: permission.PermissionDetailHandler(serverCtx),
+				},
+			}...,
+		),
 	)
 }

@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-card class="mx-auto my-2">
+    <v-card class="my-2">
       <v-card-title>
         <v-row>
           <v-col cols="12"
@@ -182,7 +182,7 @@ export default {
       this.selection.forEach(function (element) {
         casbinRoles.push(element.casbin_role)
       });
-      this.$axios.post('/backend/user/role/assign', {
+      this.$graphicsHttp('post','/user/role/assign', {
         id: this.userId,
         casbin_roles: casbinRoles,
       })
@@ -211,7 +211,7 @@ export default {
     },
     getAllRoles() {
       this.overlay += 1;
-      this.$axios.post('/backend/role', {name: ''})
+      this.$graphicsHttp('post','/role', {name: ''})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {

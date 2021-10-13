@@ -8,6 +8,7 @@ import (
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
 	"strconv"
+	"strings"
 )
 
 type (
@@ -16,6 +17,7 @@ type (
 		ChannelList(name string) ([]GraphicsChannel, error)
 		UpdateOrCreate(id int, channelInfo GraphicsChannel, owners []ChannelOwner, enforce *casbin.Enforcer) (*GraphicsChannel, error)
 		FindOne(id int, enforce *casbin.Enforcer) (*ChannelDetail, error)
+		GetOwnerChannels(userId string, enforcer *casbin.Enforcer) ([]int, error)
 	}
 
 	defaultGraphicsChannelModel struct {
@@ -42,6 +44,23 @@ type (
 		Name string `json:"name"`
 	}
 )
+
+func (m *defaultGraphicsChannelModel) GetOwnerChannels(userId string, enforcer *casbin.Enforcer) ([]int, error) {
+	var results []int
+	if err := enforcer.LoadPolicy(); err != nil {
+		return nil, err
+	}
+	policy := enforcer.GetFilteredNamedGroupingPolicy(constant.CasbinDefaultRole,
+		0, userId)
+	for _, item := range policy {
+		channelId, err := strconv.Atoi(strings.Split(item[1], constant.CasbinPermissionSymbol)[2])
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, channelId)
+	}
+	return results, nil
+}
 
 func (m *defaultGraphicsChannelModel) FindOne(id int, enforce *casbin.Enforcer) (*ChannelDetail, error) {
 	var channel GraphicsChannel

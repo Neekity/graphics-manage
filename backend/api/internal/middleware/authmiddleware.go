@@ -2,8 +2,11 @@ package middleware
 
 import (
 	"errors"
+	"github.com/casbin/casbin/v2"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/tal-tech/go-zero/rest/httpx"
+	"go-project/graphics-manage/backend/common/constant"
+	"go-project/graphics-manage/backend/common/helper"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,6 +14,7 @@ import (
 
 type AuthMiddleware struct {
 	AccessSecret string
+	enforcer     *casbin.Enforcer
 }
 
 type tokenClaim struct {
@@ -21,8 +25,8 @@ func (t tokenClaim) Valid() error {
 	return nil
 }
 
-func NewAuthMiddleware(secret string) *AuthMiddleware {
-	return &AuthMiddleware{AccessSecret: secret}
+func NewAuthMiddleware(secret string, enforcer *casbin.Enforcer) *AuthMiddleware {
+	return &AuthMiddleware{AccessSecret: secret, enforcer: enforcer}
 }
 
 func (m *AuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
@@ -54,8 +58,21 @@ func (m *AuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		userId := claims.Sub
-		r.Header.Set("UserId", strconv.Itoa(int(userId)))
+		userId := strconv.Itoa(int(claims.Sub))
+		r.Header.Set("UserId", userId)
+		if err := m.enforcer.LoadPolicy(); err != nil {
+			httpx.OkJson(w, helper.ApiError(err.Error(), nil))
+			return
+		}
+		flag, err := m.enforcer.Enforce(userId, r.URL.Path, constant.CasbinPermissionWrite)
+		if err != nil {
+			httpx.OkJson(w, helper.ApiError(err.Error(), nil))
+			return
+		}
+		if !flag {
+			httpx.OkJson(w, helper.ApiError("未拥有该路由的权限", nil))
+			return
+		}
 		next(w, r)
 	}
 }

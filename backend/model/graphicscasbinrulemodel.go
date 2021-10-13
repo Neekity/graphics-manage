@@ -6,8 +6,6 @@ import (
 
 type (
 	GraphicsCasbinRuleModel interface {
-		DeleteRole(role string, roleType string) error
-		GetOwnerChannels(userId int) ([]int, error)
 	}
 
 	defaultGraphicsCasbinRuleModel struct {
@@ -26,18 +24,3 @@ type (
 		V5    string `json:"v5" gorm:"column:v5;type:varchar(255)"`
 	}
 )
-
-func (m *defaultGraphicsCasbinRuleModel) GetOwnerChannels(userId int) ([]int, error) {
-	return []int{1, 3, 4, 5}, nil
-}
-
-func (m *defaultGraphicsCasbinRuleModel) DeleteRole(role string, roleType string) error {
-	panic("implement me")
-}
-
-func NewGraphicsCasbinRuleModel(gdb *gorm.DB) GraphicsCasbinRuleModel {
-	return &defaultGraphicsCasbinRuleModel{
-		GormDB: gdb,
-		table:  "`graphics_casbin_rule`",
-	}
-}

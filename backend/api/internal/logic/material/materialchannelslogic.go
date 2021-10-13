@@ -24,12 +24,12 @@ func NewMaterialChannelsLogic(ctx context.Context, svcCtx *svc.ServiceContext) M
 	}
 }
 
-func (l *MaterialChannelsLogic) MaterialChannels() (*types.ApiResponse, error) {
-	//channelIds, err := l.svcCtx.GraphicsCasbinRuleModel.GetOwnerChannels(1)
-	//if err != nil {
-	//	return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
-	//}
-	channels, err := l.svcCtx.GraphicsChannelModel.ChannelOwner([]int{1, 2, 3, 4, 5, 6})
+func (l *MaterialChannelsLogic) MaterialChannels(userId string) (*types.ApiResponse, error) {
+	channelIds, err := l.svcCtx.GraphicsChannelModel.GetOwnerChannels(userId, l.svcCtx.GraphicsCasbinRuleEnforce)
+	if err != nil {
+		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
+	}
+	channels, err := l.svcCtx.GraphicsChannelModel.ChannelOwner(channelIds)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

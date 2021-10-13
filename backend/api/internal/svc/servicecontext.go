@@ -19,7 +19,6 @@ type ServiceContext struct {
 	AccessLog                    rest.Middleware
 	CheckDataPermission          rest.Middleware
 	Auth                         rest.Middleware
-	GraphicsCasbinRuleModel      model.GraphicsCasbinRuleModel
 	GraphicsCasbinRuleEnforce    *casbin.Enforcer
 	GraphicsChannelModel         model.GraphicsChannelModel
 	GraphicsMaterialModel        model.GraphicsMaterialModel
@@ -27,6 +26,7 @@ type ServiceContext struct {
 	GraphicsMessageModel         model.GraphicsMessageModel
 	UserModel                    model.UserModel
 	RoleModel                    model.RoleModel
+	PermissionModel              model.PermissionModel
 	MenuModel                    model.MenuModel
 }
 
@@ -52,8 +52,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
 		Config:                       c,
 		AccessLog:                    middleware.NewAccessLogMiddleware().Handle,
-		CheckDataPermission:          middleware.NewCheckDataPermissionMiddleware().Handle,
-		Auth:                         middleware.NewAuthMiddleware(c.JwtAuth.AccessSecret).Handle,
+		CheckDataPermission:          middleware.NewCheckDataPermissionMiddleware(e).Handle,
+		Auth:                         middleware.NewAuthMiddleware(c.JwtAuth.AccessSecret, e).Handle,
 		GraphicsCasbinRuleEnforce:    e,
 		GraphicsChannelModel:         model.NewGraphicsChannelModel(gdb),
 		GraphicsMaterialModel:        model.NewGraphicsMaterialModel(gdb),
@@ -61,6 +61,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		GraphicsMessageModel:         model.NewGraphicsMessageModel(gdb),
 		UserModel:                    model.NewUserModel(gdb),
 		RoleModel:                    model.NewRoleModel(gdb),
+		PermissionModel:              model.NewPermissionModel(gdb),
 		MenuModel:                    model.NewMenuModel(gdb),
 	}
 }

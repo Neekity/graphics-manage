@@ -30,6 +30,7 @@ type Audience struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`
 }
+
 type Owners struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`
@@ -158,4 +159,19 @@ type RoleDetailRequest struct {
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type SearchPermissionRequest struct {
+	Name string `json:"name"`
+}
+
+type StorePermissionRequest struct {
+	Id               uint   `json:"id"`
+	Name             string `json:"name"`
+	CasbinPermission string `json:"casbin_permission"`
+	Route            string `json:"route"`
+}
+
+type PermissionDetailRequest struct {
+	Id uint `json:"id"`
 }
