@@ -19,12 +19,13 @@ type (
 	}
 
 	Permission struct {
-		ID               uint   `gorm:"column:id;type:uint;primaryKey;autoIncrement;comment:主键id;" json:"id"`
-		Name             string `gorm:"type:string;comment:角色名称;size:64;not null;" json:"name"`
-		CasbinPermission string `gorm:"type:string;uniqueIndex;comment:路由key;size:64;not null;" json:"casbin_permission"`
-		Route            string `gorm:"type:string;uniqueIndex;comment:路由;size:64;not null;" json:"route"`
-		CreatedAt        helper.MyTime
-		UpdatedAt        helper.MyTime
+		ID                   uint   `gorm:"column:id;type:uint;primaryKey;autoIncrement;comment:主键id;" json:"id"`
+		Name                 string `gorm:"type:string;comment:角色名称;size:64;not null;" json:"name"`
+		CasbinPermission     string `gorm:"type:string;comment:casbin权限key;size:64;not null;" json:"casbin_permission"`
+		CasbinPermissionType string `gorm:"type:string;comment:casbin权限类型;size:64;not null;" json:"casbin_permission_type"`
+		Route                string `gorm:"type:string;comment:路由;size:64;not null;" json:"route"`
+		CreatedAt            helper.MyTime
+		UpdatedAt            helper.MyTime
 	}
 )
 

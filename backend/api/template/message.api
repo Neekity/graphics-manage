@@ -28,8 +28,8 @@ type (
 )
 service graphics-api {
     @handler MessageChangeStatus
-    post /Message/change-status (MessageChangeStatusRequest) returns (ApiResponse)
+    post /message/change-status (MessageChangeStatusRequest) returns (ApiResponse)
 
     @handler MessageList
-    post /Message/list (SearchMessageRequest) returns (ApiResponse)
+    post /message/list (SearchMessageRequest) returns (ApiResponse)
 }

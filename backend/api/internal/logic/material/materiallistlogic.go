@@ -24,8 +24,12 @@ func NewMaterialListLogic(ctx context.Context, svcCtx *svc.ServiceContext) Mater
 	}
 }
 
-func (l *MaterialListLogic) MaterialList(req types.SearchMaterialRequest) (*types.ApiResponse, error) {
+func (l *MaterialListLogic) MaterialList(req types.SearchMaterialRequest, userId string) (*types.ApiResponse, error) {
 	materials, err := l.svcCtx.GraphicsMaterialModel.List(req.Name, req.Type, req.ChannelId)
+	if err != nil {
+		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
+	}
+	materials, err = l.svcCtx.GraphicsMaterialModel.FilterMaterial(l.svcCtx.GraphicsCasbinRuleEnforce, materials, userId)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

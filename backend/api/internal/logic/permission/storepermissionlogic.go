@@ -27,9 +27,10 @@ func NewStorePermissionLogic(ctx context.Context, svcCtx *svc.ServiceContext) St
 
 func (l *StorePermissionLogic) StorePermission(req types.StorePermissionRequest) (*types.ApiResponse, error) {
 	permissionInfo := model.Permission{
-		CasbinPermission: req.CasbinPermission,
-		Name:             req.Name,
-		Route:            req.Route,
+		CasbinPermission:     req.CasbinPermission,
+		Name:                 req.Name,
+		Route:                req.Route,
+		CasbinPermissionType: req.CasbinPermissionType,
 	}
 	permission, err := l.svcCtx.PermissionModel.UpdateOrCreate(req.Id, permissionInfo)
 	if err != nil {

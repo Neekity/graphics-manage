@@ -5,14 +5,13 @@ import (
 	"go-project/graphics-manage/backend/common/constant"
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type (
 	RoleModel interface {
 		FindOne(id uint, enforce *casbin.Enforcer) (*RoleInfo, error)
 		List(name string) ([]Role, error)
-		UpdateOrCreate(id uint, RoleInfo Role, userIds []uint, enforce *casbin.Enforcer) (*Role, error)
+		UpdateOrCreate(id uint, RoleInfo Role, permissionIds []int, enforce *casbin.Enforcer) (*Role, error)
 		Delete(id uint) error
 	}
 
@@ -31,7 +30,7 @@ type (
 
 	RoleInfo struct {
 		Role
-		Users []User `json:"users"`
+		Permissions []Permission `json:"permissions"`
 	}
 )
 
@@ -39,35 +38,34 @@ func (m *defaultRoleModel) Delete(id uint) error {
 	return m.GormDB.Delete(&Role{ID: id}).Error
 }
 
-func (m *defaultRoleModel) UpdateOrCreate(id uint, RoleInfo Role, userIds []uint, enforce *casbin.Enforcer) (*Role, error) {
+func (m *defaultRoleModel) UpdateOrCreate(id uint, RoleInfo Role, permissionIds []int, enforce *casbin.Enforcer) (*Role, error) {
 	var role Role
+	var permissions []Permission
 
 	err := m.GormDB.Transaction(func(tx *gorm.DB) error {
 		if err := m.GormDB.Model(&Role{}).Where("id = ?", id).Assign(RoleInfo).FirstOrCreate(&role).Error; err != nil {
 			return err
 		}
+		if err := m.GormDB.Where(&GraphicsCasbinRule{Ptype: constant.CasbinPolicy, V0: role.CasbinRole}).Delete(&GraphicsCasbinRule{}).Error; err != nil {
+			return err
+		}
 		if err := enforce.LoadPolicy(); err != nil {
 			return err
 		}
-		if _, err := enforce.RemoveFilteredNamedGroupingPolicy(constant.CasbinDefaultRole, 1, role.CasbinRole); err != nil {
+		if err := m.GormDB.Model(&Permission{}).Find(&permissions, permissionIds).Error; err != nil {
 			return err
 		}
-		var rules [][]string
-		for _, userId := range userIds {
-			rules = append(rules, []string{strconv.Itoa(int(userId)), role.CasbinRole})
+		for _, permission := range permissions {
+			if _, err := enforce.AddPolicy([]string{role.CasbinRole, permission.CasbinPermission, permission.CasbinPermissionType}); err != nil {
+				return err
+			}
 		}
-
-		if _, err := enforce.AddNamedGroupingPolicies(constant.CasbinDefaultRole, rules); err != nil {
-			return err
-		}
-
 		return nil
 	})
 
 	if err != nil {
 		return nil, err
 	}
-
 	return &role, nil
 }
 
@@ -85,29 +83,31 @@ func (m *defaultRoleModel) List(name string) ([]Role, error) {
 
 func (m *defaultRoleModel) FindOne(id uint, enforce *casbin.Enforcer) (*RoleInfo, error) {
 	var role Role
-	var users []User
+	var permissions []Permission
 	if err := m.GormDB.First(&role, id).Error; err != nil {
 		return nil, err
 	}
 	if err := enforce.LoadPolicy(); err != nil {
 		return nil, err
 	}
-	policies := enforce.GetFilteredNamedGroupingPolicy(constant.CasbinDefaultRole, 1, role.CasbinRole)
+	policies := enforce.GetFilteredNamedPolicy(constant.CasbinPolicy, 0, role.CasbinRole)
 	for _, policy := range policies {
-		var user User
-		userId, err := strconv.Atoi(policy[0])
+		var permission Permission
+		err := m.GormDB.Model(&Permission{}).Where("casbin_permission = ?", policy[1]).
+			Where("casbin_permission_type = ?", policy[2]).First(&permission).Error
 		if err != nil {
+			if err == GormErrNotFound {
+				continue
+			}
 			return nil, err
+
 		}
-		if err := m.GormDB.First(&user, userId).Error; err != nil {
-			return nil, err
-		}
-		users = append(users, user)
+		permissions = append(permissions, permission)
 	}
 
 	roleInfo := RoleInfo{
 		role,
-		users,
+		permissions,
 	}
 
 	return &roleInfo, nil

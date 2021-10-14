@@ -29,6 +29,9 @@ func (l *MaterialChannelsLogic) MaterialChannels(userId string) (*types.ApiRespo
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}
+	if len(channelIds) == 0 {
+		return (*types.ApiResponse)(helper.ApiSuccess(nil)), nil
+	}
 	channels, err := l.svcCtx.GraphicsChannelModel.ChannelOwner(channelIds)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil

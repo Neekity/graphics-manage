@@ -2,6 +2,8 @@ package model
 
 import (
 	"fmt"
+	"github.com/casbin/casbin/v2"
+	"github.com/tal-tech/go-zero/core/fx"
 	"go-project/graphics-manage/backend/common/constant"
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
@@ -13,6 +15,7 @@ type (
 		List(name string, Type string, channelId int) ([]GraphicsMaterial, error)
 		UpdateOrCreate(id int, materialInfo GraphicsMaterial) (*GraphicsMaterial, error)
 		Delete(id uint) error
+		FilterMaterial(enforcer *casbin.Enforcer, materials []GraphicsMaterial, userId string) ([]GraphicsMaterial, error)
 	}
 
 	defaultGraphicsMaterialModel struct {
@@ -35,6 +38,25 @@ type (
 
 func (m *defaultGraphicsMaterialModel) Delete(id uint) error {
 	return m.GormDB.Delete(&GraphicsMaterial{ID: id}).Error
+}
+
+func (m *defaultGraphicsMaterialModel) FilterMaterial(enforcer *casbin.Enforcer, materials []GraphicsMaterial, userId string) ([]GraphicsMaterial, error) {
+	if err := enforcer.LoadPolicy(); err != nil {
+		return nil, err
+	}
+	fx.From(func(source chan<- interface{}) {
+		for _, material := range materials {
+			source <- material
+		}
+	}).Filter(func(material interface{}) bool {
+		temp := material.(GraphicsMaterial)
+		if flag, err := enforcer.Enforce(userId, fmt.Sprintf(constant.CasbinMaterialPolicy, temp.ID), constant.CasbinPermissionWrite); flag && err == nil {
+			return true
+		}
+		return false
+	})
+
+	return materials, nil
 }
 
 func (m *defaultGraphicsMaterialModel) UpdateOrCreate(id int, materialInfo GraphicsMaterial) (*GraphicsMaterial, error) {

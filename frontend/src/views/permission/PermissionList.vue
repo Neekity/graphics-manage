@@ -84,6 +84,15 @@
             </v-col>
             <v-col cols="12" md="4" sm="6">
               <v-text-field
+                  v-model="casbinPermissionType"
+                  dense
+                  outlined
+                  label="casbin权限类型"
+                  :disabled="!!permissionId"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4" sm="6">
+              <v-text-field
                   v-model="permissionRoute"
                   dense
                   outlined
@@ -123,6 +132,7 @@ export default {
         value: 'name',
       },
         {text: 'casbin权限key', value: 'casbin_permission', sortable: false},
+        {text: 'casbin权限类型', value: 'casbin_permission_type', sortable: false},
         {text: '路由', value: 'route', sortable: false},
         {text: '操作', value: 'actions', sortable: false},
       ],
@@ -133,6 +143,7 @@ export default {
       overlay: 0,
       permissionName: "",
       casbinPermission: "",
+      casbinPermissionType: "",
       permissionItems: [],
     }
   },
@@ -151,10 +162,12 @@ export default {
       if (this.permissionId === 0) {
         this.permissionName = '';
         this.casbinPermission = '';
+        this.casbinPermissionType = '';
+        this.permissionRoute = '';
         return;
       }
       this.overlay += 1;
-      this.$graphicsHttp('post','permission/detail', {id: this.permissionId})
+      this.$graphicsHttp('post', 'permission/detail', {id: this.permissionId})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -178,11 +191,12 @@ export default {
     },
     store() {
       this.overlay += 1;
-      this.$graphicsHttp('post','permission/store', {
+      this.$graphicsHttp('post', 'permission/store', {
         id: this.permissionId,
         name: this.permissionName,
         casbin_permission: this.casbinPermission,
         route: this.permissionRoute,
+        casbin_permission_type: this.casbinPermissionType,
       })
           .then(response => {
             let resData = response.data;
@@ -192,7 +206,7 @@ export default {
                 timeout: 2000
               });
               this.getPermissions();
-              this.showEditDialog=false;
+              this.showEditDialog = false;
             } else {
               this.$toast('保存权限出错：' + resData.message, {
                 type: 'error',
@@ -211,7 +225,7 @@ export default {
 
     getPermissions() {
       this.overlay += 1;
-      this.$graphicsHttp('post','permission', {name: this.searchPermissionName})
+      this.$graphicsHttp('post', 'permission', {name: this.searchPermissionName})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {

@@ -87,7 +87,7 @@
             <v-col md="4" sm="6">
               <v-text-field
                   v-model="search"
-                  label="输入关键字搜索用户"
+                  label="输入关键字搜索权限"
                   clearable
                   dense
                   outlined
@@ -108,7 +108,7 @@
             </v-col>
             <v-divider vertical></v-divider>
             <v-col md="4" sm="6">
-              <div class="text-h6 pb-2">分配角色至用户</div>
+              <div class="text-h6 pb-2">分配权限至角色</div>
               <v-scroll-x-transition
                   group
                   hide-on-leave
@@ -197,25 +197,25 @@ export default {
   },
   created() {
     this.getRoles()
-    this.getAllUsers();
+    this.getAllPermissions();
   },
   methods: {
-    getAllUsers() {
+    getAllPermissions() {
       this.overlay += 1;
-      this.$graphicsHttp('post','user', {name: ''})
+      this.$graphicsHttp('post','permission', {name: ''})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
               this.items[0].children = resData.data;
             } else {
-              this.$toast('获取所有用户出错：' + resData.message, {
+              this.$toast('获取所有权限出错：' + resData.message, {
                 type: 'error',
               });
             }
           })
           .catch(error => {
             console.log(error);
-            this.$toast('获取所有用户出错：服务器出错！', {
+            this.$toast('获取所有权限出错：服务器出错！', {
               type: 'error',
               timeout: 2000,
             });
@@ -236,7 +236,7 @@ export default {
             if (resData.code === 0) {
               this.casbinRole = resData.data.casbin_role;
               this.roleName = resData.data.name;
-              this.selection = resData.data.users;
+              this.selection = resData.data.permissions || [];
             } else {
               this.$toast('获取角色详情出错：' + resData.message, {
                 type: 'error',
@@ -254,15 +254,15 @@ export default {
     },
     store() {
       this.overlay += 1;
-      let userIds = [];
+      let permissions = [];
       this.selection.forEach(function (element) {
-        userIds.push(element.id)
+        permissions.push(element.id)
       });
       this.$graphicsHttp('post','role/store', {
         id: this.roleId,
         name: this.roleName,
         casbin_role: this.casbinRole,
-        user_ids: userIds,
+        permission_ids: permissions,
       })
           .then(response => {
             let resData = response.data;

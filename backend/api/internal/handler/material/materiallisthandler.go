@@ -19,7 +19,8 @@ func MaterialListHandler(ctx *svc.ServiceContext) http.HandlerFunc {
 		}
 
 		l := logic.NewMaterialListLogic(r.Context(), ctx)
-		resp, err := l.MaterialList(req)
+		userId := r.Header.Get("UserId")
+		resp, err := l.MaterialList(req, userId)
 		if err != nil {
 			httpx.Error(w, err)
 		} else {

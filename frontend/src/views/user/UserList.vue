@@ -237,7 +237,7 @@ export default {
         return;
       }
       this.overlay += 1;
-      this.$axios.post('/backend/user/roles', {user_id: this.userId})
+      this.$graphicsHttp('post','/user/roles', {user_id: this.userId})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -260,7 +260,7 @@ export default {
     },
     getUsers() {
       this.overlay += 1;
-      this.$axios.post('/backend/user', {name: this.userName})
+      this.$graphicsHttp('post','user', {name: this.userName})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {

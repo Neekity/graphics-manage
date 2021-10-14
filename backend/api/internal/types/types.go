@@ -146,10 +146,10 @@ type SearchRoleRequest struct {
 }
 
 type StoreAndAssignRolerRequest struct {
-	Id         uint   `json:"id"`
-	Name       string `json:"name"`
-	CasbinRole string `json:"casbin_role"`
-	UserIds    []uint `json:"user_ids"`
+	Id            uint   `json:"id"`
+	Name          string `json:"name"`
+	CasbinRole    string `json:"casbin_role"`
+	PermissionIds []int  `json:"permission_ids"`
 }
 
 type RoleDetailRequest struct {
@@ -166,10 +166,11 @@ type SearchPermissionRequest struct {
 }
 
 type StorePermissionRequest struct {
-	Id               uint   `json:"id"`
-	Name             string `json:"name"`
-	CasbinPermission string `json:"casbin_permission"`
-	Route            string `json:"route"`
+	Id                   uint   `json:"id"`
+	Name                 string `json:"name"`
+	CasbinPermission     string `json:"casbin_permission"`
+	Route                string `json:"route"`
+	CasbinPermissionType string `json:"casbin_permission_type"`
 }
 
 type PermissionDetailRequest struct {

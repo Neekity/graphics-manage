@@ -22,7 +22,7 @@ func (m *CheckDataPermissionMiddleware) Handle(next http.HandlerFunc) http.Handl
 		if err := m.enforcer.LoadPolicy(); err != nil {
 			panic(err)
 		}
-		flag, err := m.enforcer.Enforce(userId, r.URL, constant.CasbinPermissionWrite)
+		flag, err := m.enforcer.Enforce(userId, r.URL.Path, constant.CasbinPermissionWrite)
 		if err != nil {
 			panic(err)
 		}

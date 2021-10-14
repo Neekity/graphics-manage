@@ -262,7 +262,7 @@ export default {
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.channelItems = resData.data;
+              this.channelItems = resData.data || [];
             } else {
               this.$toast('获取频道出错：' + resData.message, {
                 type: 'error',
@@ -286,7 +286,7 @@ export default {
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.graphics = resData.data;
+              this.graphics = resData.data || [];
             } else {
               this.$toast('获取图文素材出错：' + resData.message, {
                 type: 'error',

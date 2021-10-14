@@ -53,7 +53,11 @@ func (m *defaultGraphicsChannelModel) GetOwnerChannels(userId string, enforcer *
 	policy := enforcer.GetFilteredNamedGroupingPolicy(constant.CasbinDefaultRole,
 		0, userId)
 	for _, item := range policy {
-		channelId, err := strconv.Atoi(strings.Split(item[1], constant.CasbinPermissionSymbol)[2])
+		role := strings.Split(item[1], constant.CasbinPermissionSymbol)
+		if len(role) != 3 {
+			continue
+		}
+		channelId, err := strconv.Atoi(role[2])
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +75,7 @@ func (m *defaultGraphicsChannelModel) FindOne(id int, enforce *casbin.Enforcer) 
 		return nil, err
 	}
 	policy := enforce.GetFilteredNamedGroupingPolicy(constant.CasbinDefaultRole,
-		1, fmt.Sprintf(constant.ChannelRole, channel.ID))
+		1, fmt.Sprintf(constant.CasbinChannelRole, channel.ID))
 	var channelOwners []ChannelOwner
 	for _, item := range policy {
 		var user User
@@ -104,43 +108,25 @@ func (m *defaultGraphicsChannelModel) UpdateOrCreate(id int, channelInfo Graphic
 			return err
 		}
 		if id == 0 {
-			roles := []Role{
-				{
-					Name:       fmt.Sprintf(constant.ChannelWriteRoleName, channel.Name),
-					CasbinRole: fmt.Sprintf(constant.CasbinChannelWriteRole, channel.ID),
-				},
-				{
-					Name:       fmt.Sprintf(constant.ChannelReadRoleName, channel.Name),
-					CasbinRole: fmt.Sprintf(constant.CasbinChannelReadRole, channel.ID),
-				},
+			role := Role{
+				Name:       fmt.Sprintf(constant.ChannelRoleName, channel.Name),
+				CasbinRole: fmt.Sprintf(constant.CasbinChannelRole, channel.ID),
 			}
-			if err := tx.Create(&roles).Error; err != nil {
+			if err := tx.Create(&role).Error; err != nil {
 				return err
 			}
 			casbinModels := []GraphicsCasbinRule{
 				{
 					Ptype: constant.CasbinPolicy,
-					V0:    fmt.Sprintf(constant.CasbinChannelWriteRole, channel.ID),
+					V0:    fmt.Sprintf(constant.CasbinChannelRole, channel.ID),
 					V1:    fmt.Sprintf(constant.CasbinChannelMaterialResourceRole, channel.ID),
 					V2:    constant.CasbinPermissionWrite,
 				},
 				{
 					Ptype: constant.CasbinPolicy,
-					V0:    fmt.Sprintf(constant.CasbinChannelReadRole, channel.ID),
-					V1:    fmt.Sprintf(constant.CasbinChannelMaterialResourceRole, channel.ID),
-					V2:    constant.CasbinPermissionRead,
-				},
-				{
-					Ptype: constant.CasbinPolicy,
-					V0:    fmt.Sprintf(constant.CasbinChannelWriteRole, channel.ID),
+					V0:    fmt.Sprintf(constant.CasbinChannelRole, channel.ID),
 					V1:    fmt.Sprintf(constant.CasbinChannelMessageResourceRole, channel.ID),
 					V2:    constant.CasbinPermissionWrite,
-				},
-				{
-					Ptype: constant.CasbinPolicy,
-					V0:    fmt.Sprintf(constant.CasbinChannelReadRole, channel.ID),
-					V1:    fmt.Sprintf(constant.CasbinChannelMessageResourceRole, channel.ID),
-					V2:    constant.CasbinPermissionRead,
 				},
 			}
 			if err := tx.Create(&casbinModels).Error; err != nil {
@@ -151,16 +137,15 @@ func (m *defaultGraphicsChannelModel) UpdateOrCreate(id int, channelInfo Graphic
 			return err
 		}
 		if _, err := enforce.RemoveFilteredNamedGroupingPolicy(constant.CasbinDefaultRole,
-			1, fmt.Sprintf(constant.ChannelRole, channel.ID)); err != nil {
+			1, fmt.Sprintf(constant.CasbinChannelRole, channel.ID)); err != nil {
 			return err
 		}
-		var rules [][]string
 		for _, item := range owners {
-			rules = append(rules, []string{strconv.Itoa(item.Id), fmt.Sprintf(constant.ChannelRole, channel.ID)})
+			if _, err := enforce.AddNamedGroupingPolicy(constant.CasbinDefaultRole, []string{strconv.Itoa(item.Id), fmt.Sprintf(constant.CasbinChannelRole, channel.ID)}); err != nil {
+				return err
+			}
 		}
-		if _, err := enforce.AddNamedGroupingPolicies(constant.CasbinDefaultRole, rules); err != nil {
-			return err
-		}
+
 		return nil
 	})
 	if err != nil {
