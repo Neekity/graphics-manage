@@ -261,13 +261,11 @@
                         ref="audiencesTree"
                         v-model="audiencesSelection"
                         :items="audiencesTree"
-                        selection-type="independent"
                         selectable
                         return-object
                         dense
                         hoverable
                         :open.sync="audiencesOpen"
-                        item-text="text"
                         :search="audiencesSearch"
                     ></v-treeview>
                   </v-col>
@@ -292,9 +290,9 @@
                               left
                               small
                           >
-                            {{ node.type == 'employee' ? ' mdi-account' : 'mdi-account-multiple' }}
+                           mdi-account
                           </v-icon>
-                          {{ node.text }}
+                          {{ node.name }}
                         </v-chip>
                       </v-scroll-x-transition>
                     </v-card-text>
@@ -367,7 +365,7 @@ export default {
       audiencesOpen: [],
       audiencesSearch: null,
       audiencesSelection: [],
-      audiencesTree: [],
+      audiencesTree: [{id: 0, name: '全选', children: []}],
       overlay: 0,
       timedSending: false,
       authorSwitch: false,
@@ -422,7 +420,8 @@ export default {
             let resData = response.data;
             if (resData.code === 0) {
               this.channelTemplates = [];
-              for (let i = 0; i < resData.data.length; i++) {
+              let templates = resData.data || [];
+              for (let i = 0; i < templates.length; i++) {
                 this.channelTemplates.push({
                       title: resData.data[i].name,
                       description: resData.data[i].abstract,
@@ -494,7 +493,7 @@ export default {
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.selection = JSON.parse(resData.data.audience_config);
+              this.audiencesTree[0].children = JSON.parse(resData.data.audiences);
               this.channelName = resData.data.name;
             } else {
               this.$toast('获取频道听众出错：' + resData.message, {
@@ -540,7 +539,7 @@ export default {
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
-              this.images = resData.data;
+              this.images = resData.data || [];
             } else {
               this.$toast('获取图片出错：' + resData.message, {
                 type: 'error',
@@ -637,7 +636,7 @@ export default {
       this.overlay += 1;
       let receivers = [];
       this.audiencesSelection.forEach(function (element) {
-        receivers.push({id: element.id, type: element.type, name: element.text})
+        receivers.push({id: element.id, type: element.type, name: element.name})
       });
 
       this.$graphicsHttp('post', '/material/publish', {

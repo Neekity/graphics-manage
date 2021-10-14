@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/casbin/casbin/v2"
 	"github.com/tal-tech/go-zero/core/fx"
+	"github.com/tal-tech/go-zero/core/logx"
 	"go-project/graphics-manage/backend/common/constant"
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
@@ -44,19 +45,19 @@ func (m *defaultGraphicsMaterialModel) FilterMaterial(enforcer *casbin.Enforcer,
 	if err := enforcer.LoadPolicy(); err != nil {
 		return nil, err
 	}
+	var results []GraphicsMaterial
 	fx.From(func(source chan<- interface{}) {
 		for _, material := range materials {
 			source <- material
 		}
-	}).Filter(func(material interface{}) bool {
+	}).ForEach(func(material interface{}) {
 		temp := material.(GraphicsMaterial)
-		if flag, err := enforcer.Enforce(userId, fmt.Sprintf(constant.CasbinMaterialPolicy, temp.ID), constant.CasbinPermissionWrite); flag && err == nil {
-			return true
+		if flag, _ := enforcer.Enforce(userId, fmt.Sprintf(constant.CasbinMaterialPolicy, temp.ID), constant.CasbinPermissionWrite); flag {
+			results = append(results, temp)
 		}
-		return false
 	})
-
-	return materials, nil
+	logx.Error(len(results))
+	return results, nil
 }
 
 func (m *defaultGraphicsMaterialModel) UpdateOrCreate(id int, materialInfo GraphicsMaterial) (*GraphicsMaterial, error) {
