@@ -114,13 +114,28 @@ func RegisterHandlers(engine *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Route{
 				{
 					Method:  http.MethodPost,
-					Path:    "/Message/change-status",
-					Handler: message.MessageChangeStatusHandler(serverCtx),
+					Path:    "/message/owner/change-status",
+					Handler: message.MessageOwnerChangeStatusHandler(serverCtx),
 				},
 				{
 					Method:  http.MethodPost,
-					Path:    "/Message/list",
-					Handler: message.MessageListHandler(serverCtx),
+					Path:    "/message/owner/list",
+					Handler: message.MessageOwnerListHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/message/owner/detail",
+					Handler: message.MessageOwnerDetailHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/message/user/list",
+					Handler: message.MessageUserListHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/message/user/detail",
+					Handler: message.MessageUserDetailHandler(serverCtx),
 				},
 			}...,
 		),

@@ -87,16 +87,18 @@ type StoreMenuRequest struct {
 	Icon     string `json:"icon"`
 }
 
-type MessageChangeStatusRequest struct {
+type MessageOwnerChangeStatusRequest struct {
 	Id     int `json:"id"`
 	Status int `json:"status"`
 }
 
 type SearchMessageRequest struct {
-	Name      string `json:"name"`
-	Page      int    `json:"page"`
-	Type      string `json:"type"`
+	Title     string `json:"title"`
 	ChannelId int    `json:"channel_id"`
+}
+
+type MessageDetailRequest struct {
+	Id int `json:"id"`
 }
 
 type OaUserInfo struct {

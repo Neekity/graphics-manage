@@ -17,6 +17,7 @@ type (
         Name    string `json:"name"`
         CasbinPermission string `json:"casbin_permission"`
         Route string `json:"route"`
+        CasbinPermissionType string `json:"casbin_permission_type"`
     }
 
     PermissionDetailRequest {

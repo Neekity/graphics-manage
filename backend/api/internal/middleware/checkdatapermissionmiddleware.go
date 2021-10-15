@@ -11,6 +11,7 @@ import (
 	"go-project/graphics-manage/backend/common/helper"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type CheckDataPermissionMiddleware struct {
@@ -29,10 +30,6 @@ func NewCheckDataPermissionMiddleware(enforcer *casbin.Enforcer) *CheckDataPermi
 func (m *CheckDataPermissionMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userId := r.Header.Get("UserId")
-		if r.URL.Path == "/material/channels" {
-			next(w, r)
-			return
-		}
 		if err := m.enforcer.LoadPolicy(); err != nil {
 			panic(err)
 		}
@@ -52,12 +49,30 @@ func (m *CheckDataPermissionMiddleware) Handle(next http.HandlerFunc) http.Handl
 			httpx.OkJson(w, helper.ApiError(err.Error(), nil))
 		}
 
-		if flag, _ := m.enforcer.Enforce(userId, fmt.Sprintf(constant.CasbinMaterialPolicy, data.ID), constant.CasbinPermissionWrite); flag {
-			next(w, r)
-			return
+		if data.ID != 0 {
+			dataPermission := fmt.Sprintf(constant.CasbinMaterialPolicy, data.ID)
+			if strings.Contains(r.URL.Path, "message") {
+				dataPermission = fmt.Sprintf(constant.CasbinMessagePolicy, data.ID)
+			}
+			if flag, _ := m.enforcer.Enforce(userId, dataPermission, constant.CasbinPermissionWrite); flag {
+				next(w, r)
+				return
+			}
 		}
+
 		if data.ChannelId != 0 {
 			if flag := m.enforcer.HasGroupingPolicy(userId, fmt.Sprintf(constant.CasbinChannelRole, data.ChannelId)); flag {
+				next(w, r)
+				return
+			}
+		} else {
+			policy := m.enforcer.GetFilteredNamedGroupingPolicy(constant.CasbinDefaultRole,
+				0, userId)
+			for _, item := range policy {
+				role := strings.Split(item[1], constant.CasbinPermissionSymbol)
+				if len(role) != 3 || !strings.Contains(item[1], constant.CasbinChannelRole[:len(constant.CasbinChannelRole)-2]) {
+					continue
+				}
 				next(w, r)
 				return
 			}

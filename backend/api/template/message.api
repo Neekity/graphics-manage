@@ -8,16 +8,18 @@ info(
 )
 
 type (
-    MessageChangeStatusRequest {
+    MessageOwnerChangeStatusRequest {
         Id int `json:"id"`
         Status int `json:"status"`
     }
 
     SearchMessageRequest {
-        Name string `json:"name"`
-        Page int `json:"page"`
-        Type string `json:"type"`
+        Title string `json:"title"`
         ChannelId int `json:"channel_id"`
+    }
+
+    MessageDetailRequest {
+        Id int `json:"id"`
     }
 )
 
@@ -27,9 +29,18 @@ type (
     group: message
 )
 service graphics-api {
-    @handler MessageChangeStatus
-    post /message/change-status (MessageChangeStatusRequest) returns (ApiResponse)
+    @handler MessageOwnerChangeStatus
+    post /message/owner/change-status (MessageOwnerChangeStatusRequest) returns (ApiResponse)
 
-    @handler MessageList
-    post /message/list (SearchMessageRequest) returns (ApiResponse)
+    @handler MessageOwnerList
+    post /message/owner/list (SearchMessageRequest) returns (ApiResponse)
+
+    @handler MessageOwnerDetail
+    post /message/owner/detail (MessageDetailRequest) returns (ApiResponse)
+
+    @handler MessageUserList
+    post /message/user/list (SearchMessageRequest) returns (ApiResponse)
+
+    @handler MessageUserDetail
+    post /message/user/detail (MessageDetailRequest) returns (ApiResponse)
 }

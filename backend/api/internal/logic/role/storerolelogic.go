@@ -27,7 +27,7 @@ func NewStoreRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) StoreRol
 
 func (l *StoreRoleLogic) StoreRole(req types.StoreAndAssignRolerRequest) (*types.ApiResponse, error) {
 	roleInfo := model.Role{CasbinRole: req.CasbinRole, Name: req.Name}
-	role, err := l.svcCtx.RoleModel.UpdateOrCreate(req.Id, roleInfo, req.PermissionIds, l.svcCtx.GraphicsCasbinRuleEnforce)
+	role, err := l.svcCtx.RoleModel.UpdateOrCreate(req.Id, roleInfo, req.PermissionIds)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

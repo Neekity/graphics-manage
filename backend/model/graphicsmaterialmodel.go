@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/casbin/casbin/v2"
 	"github.com/tal-tech/go-zero/core/fx"
-	"github.com/tal-tech/go-zero/core/logx"
 	"go-project/graphics-manage/backend/common/constant"
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
@@ -56,7 +55,7 @@ func (m *defaultGraphicsMaterialModel) FilterMaterial(enforcer *casbin.Enforcer,
 			results = append(results, temp)
 		}
 	})
-	logx.Error(len(results))
+
 	return results, nil
 }
 

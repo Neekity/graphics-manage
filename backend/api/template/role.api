@@ -13,10 +13,10 @@ type (
     }
 
     StoreAndAssignRolerRequest {
-        Id      uint   `json:"id"`
-        Name    string `json:"name"`
-        CasbinRole string `json:"casbin_role"`
-        UserIds []uint `json:"user_ids"`
+        Id            uint   `json:"id"`
+        Name          string `json:"name"`
+        CasbinRole    string `json:"casbin_role"`
+        PermissionIds []int  `json:"permission_ids"`
     }
 
     RoleDetailRequest {

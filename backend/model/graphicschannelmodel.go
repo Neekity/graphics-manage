@@ -54,7 +54,7 @@ func (m *defaultGraphicsChannelModel) GetOwnerChannels(userId string, enforcer *
 		0, userId)
 	for _, item := range policy {
 		role := strings.Split(item[1], constant.CasbinPermissionSymbol)
-		if len(role) != 3 {
+		if len(role) != 3 || !strings.Contains(item[1], constant.CasbinChannelRole[:len(constant.CasbinChannelRole)-2]) {
 			continue
 		}
 		channelId, err := strconv.Atoi(role[2])

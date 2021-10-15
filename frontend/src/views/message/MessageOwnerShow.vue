@@ -39,8 +39,8 @@
           </v-tooltip>
         </v-card-subtitle>
       </v-card>
-      <message-user-show v-if="showView" :content="message.content" :base-url="baseUrl" :subtitle="subtitle"
-                         :title="title"></message-user-show>
+      <message-show v-if="showView" :content="message.content" :base-url="baseUrl" :subtitle="message.subtitle"
+                         :title="message.title"></message-show>
       <v-card width="660px" class="mx-auto my-12">
         <v-card-text>
           <v-tooltip bottom>
@@ -53,7 +53,7 @@
                 <v-icon left>
                   mdi-account-arrow-right-outline
                 </v-icon>
-                {{ message.sender_employee_name }}
+                {{ message.sender_user_name }}
               </v-chip>
             </template>
             <span>消息发送者</span>
@@ -68,7 +68,7 @@
                 <v-icon left>
                   mdi-radio-tower
                 </v-icon>
-                {{ message.channel }}
+                {{ message.channel_name }}
               </v-chip>
             </template>
             <span>消息所属频道</span>
@@ -109,7 +109,7 @@
             hide-on-leave
           >
             <v-chip
-              v-for="(node, i) in message.receivers"
+              v-for="(node, i) in receivers"
               :key="i"
               color="primary"
               outlined
@@ -122,7 +122,7 @@
               >
                 mdi-account-arrow-left-outline
               </v-icon>
-              {{ node }}
+              {{ node.name }}
             </v-chip>
           </v-scroll-x-transition>
         </v-card-text>
@@ -138,38 +138,41 @@
 </template>
 
 <script>
-import MessageUserShow from "./MessageUserShow";
+import MessageShow from "../../components/message/MessageShow";
 
 export default {
   name: "MessageOwnerShow",
-  components: {MessageUserShow},
-  props: ['messageId', 'baseUrl'],
+  components: {MessageShow},
   data() {
     return {
       overlay: false,
       showView: false,
       title: '',
       subtitle: '',
+      messageId:parseInt(this.$route.query.id),
+      baseUrl:'/tinymce/',
       message: {},
+      receivers: [],
     }
   },
   created() {
-    this.getMaterial();
+    this.getOwnerMessage();
   },
   methods: {
-    getMaterial() {
+    getOwnerMessage() {
       if (this.messageId == 0) {
         return;
       }
       this.overlay = true;
-      this.$http.post('/graphics/message/owner/data', {id: this.messageId})
+      this.$graphicsHttp('post','/message/owner/detail', {id: this.messageId})
         .then(response => {
           let resData = response.data;
           if (resData.code === 0) {
-            this.message = resData.data.message;
-            this.title = resData.data.title;
-            this.subtitle = resData.data.subtitle;
+            this.message = resData.data || {};
+            this.title = this.message.title;
+            this.subtitle = (this.message.author || '')+' '+this.message.send_time ;
             this.showView = true;
+            this.receivers =this.message.receivers
           } else {
             this.$toast('获取消息出错：' + resData.message, {
               type: 'error',
@@ -178,7 +181,7 @@ export default {
         })
         .catch(error => {
           console.log(error);
-          this.$toast('保存出错：服务器出错！', {
+          this.$toast('获取消息出错：服务器出错！', {
             type: 'error',
             timeout: 2000,
           });

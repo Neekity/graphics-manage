@@ -452,7 +452,7 @@ export default {
       let formData = new FormData();
       formData.append('graphics_img', this.imageFile, this.imageFile.name);
       formData.append('channel_id', this.channel);
-      this.$axios.post('/backend/material/image/upload', formData)
+      this.$graphicsHttp('post','/material/image/upload', formData)
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -652,7 +652,7 @@ export default {
             type: 'success',
             timeout: 2000
           });
-          location.href = '/message'
+          location.href = '/message-owner'
         } else if (resData.code === 40 || resData.code === 1000004001) {
           this.$toast('发布出错：' + resData.message + '【' +
               resData.data.errors[Object.keys(resData.data.errors)[0]][0] + '】', {

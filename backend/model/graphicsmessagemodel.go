@@ -2,6 +2,10 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/casbin/casbin/v2"
+	"github.com/tal-tech/go-zero/core/fx"
+	"go-project/graphics-manage/backend/common/constant"
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
 )
@@ -9,6 +13,10 @@ import (
 type (
 	GraphicsMessageModel interface {
 		Create(message GraphicsMessage) (*GraphicsMessage, error)
+		OwnerList(title string, channelId int) ([]GraphicsMessage, error)
+		FilterMessage(enforcer *casbin.Enforcer, messages []GraphicsMessage, userId string) ([]GraphicsMessage, error)
+		OwnerDetail(id int) (*MessageOwnerDetail, error)
+		UserDetail(id int) (*MessageUserDetail, error)
 	}
 
 	defaultGraphicsMessageModel struct {
@@ -34,11 +42,113 @@ type (
 		Author          string        `json:"author" gorm:"column:author;type:varchar(16);comment:作者"`                                                  // 作者
 	}
 
+	MessageOwnerDetail struct {
+		CoverPictureURL string     `json:"cover_picture_url"`
+		Title           string     `json:"title"`
+		Abstract        string     `json:"abstract"`
+		Content         string     `json:"content"`
+		SubTitle        string     `json:"sub_title"`
+		SenderUserName  string     `json:"sender_user_name"`
+		ChannelName     string     `json:"channel_name"`
+		SendAt          string     `json:"send_at"`
+		Status          string     `json:"status"`
+		Receivers       []Receiver `json:"receivers"`
+	}
+
+	MessageUserDetail struct {
+		Title    string `json:"title"`
+		Content  string `json:"content"`
+		SubTitle string `json:"sub_title"`
+	}
+
 	Receiver struct {
 		Id   int    `json:"id"`
 		Name string `json:"name"`
 	}
 )
+
+func (m *defaultGraphicsMessageModel) OwnerDetail(id int) (*MessageOwnerDetail, error) {
+	message, err := m.findOne(id)
+	if err != nil {
+		return nil, err
+	}
+	var receivers []Receiver
+	if err := json.Unmarshal([]byte(message.Receivers), &receivers); err != nil {
+		return nil, err
+	}
+	var channel GraphicsChannel
+	if err := m.GormDB.Model(&GraphicsChannel{}).First(&channel, message.ChannelID).Error; err != nil {
+		return nil, err
+	}
+	var user User
+	if err := m.GormDB.Model(&User{}).First(&user, message.SenderUserID).Error; err != nil {
+		return nil, err
+	}
+	sendAt := message.SendAt.Format("2006-01-02")
+	subTitle := sendAt
+	if len(message.Author) != 0 {
+		subTitle = message.Author + " " + sendAt
+	}
+	messageOwnerDetail := MessageOwnerDetail{
+		CoverPictureURL: message.CoverPictureURL,
+		Title:           message.Title,
+		Abstract:        message.Abstract,
+		Content:         message.Content,
+		SubTitle:        subTitle,
+		SenderUserName:  user.Name,
+		ChannelName:     channel.Name,
+		SendAt:          sendAt,
+		Status:          constant.MessageStatus[int(message.Status)],
+		Receivers:       receivers,
+	}
+	return &messageOwnerDetail, nil
+}
+
+func (m *defaultGraphicsMessageModel) UserDetail(id int) (*MessageUserDetail, error) {
+	panic("implement me")
+}
+
+func (m *defaultGraphicsMessageModel) findOne(id int) (*GraphicsMessage, error) {
+	var message GraphicsMessage
+	if err := m.GormDB.First(&message, id).Error; err != nil {
+		return nil, err
+	}
+	return &message, nil
+}
+
+func (m *defaultGraphicsMessageModel) OwnerList(title string, channelId int) ([]GraphicsMessage, error) {
+	var messages []GraphicsMessage
+	query := m.GormDB.Table(m.table)
+	if title != "" {
+		query.Scopes(helper.QueryKey("%"+title+"%", "title", "like"))
+	}
+	if channelId != 0 {
+		query.Scopes(helper.QueryKey(channelId, "channel_id", "="))
+	}
+	if err := query.Find(&messages).Error; err != nil {
+		return nil, err
+	}
+	return messages, nil
+}
+
+func (m *defaultGraphicsMessageModel) FilterMessage(enforcer *casbin.Enforcer, messages []GraphicsMessage, userId string) ([]GraphicsMessage, error) {
+	if err := enforcer.LoadPolicy(); err != nil {
+		return nil, err
+	}
+	var results []GraphicsMessage
+	fx.From(func(source chan<- interface{}) {
+		for _, message := range messages {
+			source <- message
+		}
+	}).ForEach(func(material interface{}) {
+		temp := material.(GraphicsMessage)
+		if flag, _ := enforcer.Enforce(userId, fmt.Sprintf(constant.CasbinMessagePolicy, temp.ID), constant.CasbinPermissionWrite); flag {
+			results = append(results, temp)
+		}
+	})
+
+	return results, nil
+}
 
 func (m *defaultGraphicsMessageModel) Create(message GraphicsMessage) (*GraphicsMessage, error) {
 	err := m.GormDB.Transaction(func(tx *gorm.DB) error {
@@ -58,6 +168,14 @@ func (m *defaultGraphicsMessageModel) Create(message GraphicsMessage) (*Graphics
 			})
 		}
 		if err := tx.Create(&messageReceivers).Error; err != nil {
+			return err
+		}
+		casbinModel := GraphicsCasbinRule{
+			Ptype: constant.CasbinResourceRole,
+			V0:    fmt.Sprintf(constant.CasbinMessagePolicy, message.ID),
+			V1:    fmt.Sprintf(constant.CasbinChannelMessageResourceRole, message.ChannelID),
+		}
+		if err := tx.Create(&casbinModel).Error; err != nil {
 			return err
 		}
 		return nil

@@ -23,6 +23,10 @@ const routes = [
     {
         path: '/material/graphics/edit',
         name: 'MaterialGraphicsEdit',
+        meta: {
+            title: '编辑素材',
+            authCheck: true
+        },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
@@ -31,6 +35,10 @@ const routes = [
     {
         path: '/channel/edit',
         name: 'EditChannel',
+        meta: {
+            title: '编辑频道',
+            authCheck: true
+        },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
@@ -45,16 +53,36 @@ const routes = [
     //   component: () => import(/* webpackChunkName: "about" */ '../views/material/MaterialTemplateEdit.vue')
     // },
     {
-        path: '/message',
-        name: 'MessageMasonry',
+        path: '/message-owner',
+        name: 'MessageOwner',
+        meta: {
+            title: '消息管理列表',
+            authCheck: true
+        },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "about" */ '../views/message/MessageMasonry.vue')
+        component: () => import(/* webpackChunkName: "about" */ '../views/message/MessageOwnerList.vue')
+    },
+    {
+        path: '/message-user',
+        name: 'MessageUser',
+        meta: {
+            title: '用户消息列表',
+            authCheck: true
+        },
+        // route level code-splitting
+        // this generates a separate chunk (about.[hash].js) for this route
+        // which is lazy-loaded when the route is visited.
+        component: () => import(/* webpackChunkName: "about" */ '../views/message/MessageUserList.vue')
     },
     {
         path: '/channel',
         name: 'ChannelList',
+        meta: {
+            title: '频道列表',
+            authCheck: true
+        },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
@@ -63,6 +91,10 @@ const routes = [
     {
         path: '/user',
         name: 'UserList',
+        meta: {
+            title: '用户列表',
+            authCheck: true
+        },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
@@ -71,6 +103,10 @@ const routes = [
     {
         path: '/role',
         name: 'RoleList',
+        meta: {
+            title: '角色列表',
+            authCheck: true
+        },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
@@ -79,18 +115,39 @@ const routes = [
     {
         path: '/permission',
         name: 'PermissionList',
+        meta: {
+            title: '权限列表',
+            authCheck: true
+        },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "about" */ '../views/permission/PermissionList.vue')
     },
     {
-        path: '/message/user-show',
+        path: '/message-user/show',
         name: 'MessageUserShow',
+        meta: {
+            title: '用户消息详情',
+            authCheck: true
+        },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "about" */ '../views/message/MessageUserShow.vue')
+    },
+    {
+        path: '/message-owner/show',
+        name: 'MessageOwnerShow',
+        meta: {
+            title: '消息详情',
+            authCheck: true,
+            hideNav: true
+        },
+        // route level code-splitting
+        // this generates a separate chunk (about.[hash].js) for this route
+        // which is lazy-loaded when the route is visited.
+        component: () => import(/* webpackChunkName: "about" */ '../views/message/MessageOwnerShow.vue')
     },
     {
         path: '/login',

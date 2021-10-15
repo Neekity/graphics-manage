@@ -11,7 +11,7 @@ type (
 	RoleModel interface {
 		FindOne(id uint, enforce *casbin.Enforcer) (*RoleInfo, error)
 		List(name string) ([]Role, error)
-		UpdateOrCreate(id uint, RoleInfo Role, permissionIds []int, enforce *casbin.Enforcer) (*Role, error)
+		UpdateOrCreate(id uint, RoleInfo Role, permissionIds []int) (*Role, error)
 		Delete(id uint) error
 	}
 
@@ -38,7 +38,7 @@ func (m *defaultRoleModel) Delete(id uint) error {
 	return m.GormDB.Delete(&Role{ID: id}).Error
 }
 
-func (m *defaultRoleModel) UpdateOrCreate(id uint, RoleInfo Role, permissionIds []int, enforce *casbin.Enforcer) (*Role, error) {
+func (m *defaultRoleModel) UpdateOrCreate(id uint, RoleInfo Role, permissionIds []int) (*Role, error) {
 	var role Role
 	var permissions []Permission
 
@@ -46,19 +46,24 @@ func (m *defaultRoleModel) UpdateOrCreate(id uint, RoleInfo Role, permissionIds 
 		if err := tx.Model(&Role{}).Where("id = ?", id).Assign(RoleInfo).FirstOrCreate(&role).Error; err != nil {
 			return err
 		}
-		if err := tx.Where(&GraphicsCasbinRule{Ptype: constant.CasbinPolicy, V0: role.CasbinRole}).Delete(&GraphicsCasbinRule{}).Error; err != nil {
-			return err
-		}
-		if err := enforce.LoadPolicy(); err != nil {
+		if err := m.GormDB.Where("ptype = ?", constant.CasbinPolicy).
+			Where("v0 = ?", role.CasbinRole).Delete(GraphicsCasbinRule{}).Error; err != nil {
 			return err
 		}
 		if err := tx.Model(&Permission{}).Find(&permissions, permissionIds).Error; err != nil {
 			return err
 		}
+		var casbinModels []GraphicsCasbinRule
 		for _, permission := range permissions {
-			if _, err := enforce.AddPolicy([]string{role.CasbinRole, permission.CasbinPermission, permission.CasbinPermissionType}); err != nil {
-				return err
-			}
+			casbinModels = append(casbinModels, GraphicsCasbinRule{
+				Ptype: constant.CasbinPolicy,
+				V0:    role.CasbinRole,
+				V1:    permission.CasbinPermission,
+				V2:    permission.CasbinPermissionType,
+			})
+		}
+		if err := tx.Create(&casbinModels).Error; err != nil {
+			return err
 		}
 		return nil
 	})

@@ -30,7 +30,7 @@ func (l *MaterialPublishLogic) MaterialPublish(req types.PublishMaterialRequest,
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}
-	sendTime, err := time.Parse("2006-01-02 03:04:05", req.SendTime)
+	sendTime, err := time.Parse("2006-01-02 15:04:05", req.SendTime)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

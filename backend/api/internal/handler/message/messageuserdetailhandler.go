@@ -10,16 +10,16 @@ import (
 	"github.com/tal-tech/go-zero/rest/httpx"
 )
 
-func MessageChangeStatusHandler(ctx *svc.ServiceContext) http.HandlerFunc {
+func MessageUserDetailHandler(ctx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.MessageChangeStatusRequest
+		var req types.MessageDetailRequest
 		if err := httpx.Parse(r, &req); err != nil {
 			httpx.Error(w, err)
 			return
 		}
 
-		l := logic.NewMessageChangeStatusLogic(r.Context(), ctx)
-		resp, err := l.MessageChangeStatus(req)
+		l := logic.NewMessageUserDetailLogic(r.Context(), ctx)
+		resp, err := l.MessageUserDetail(req)
 		if err != nil {
 			httpx.Error(w, err)
 		} else {

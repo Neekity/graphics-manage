@@ -9,21 +9,21 @@ import (
 	"github.com/tal-tech/go-zero/core/logx"
 )
 
-type MessageChangeStatusLogic struct {
+type MessageOwnerChangeStatusLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewMessageChangeStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) MessageChangeStatusLogic {
-	return MessageChangeStatusLogic{
+func NewMessageOwnerChangeStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) MessageOwnerChangeStatusLogic {
+	return MessageOwnerChangeStatusLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *MessageChangeStatusLogic) MessageChangeStatus(req types.MessageChangeStatusRequest) (*types.ApiResponse, error) {
+func (l *MessageOwnerChangeStatusLogic) MessageOwnerChangeStatus(req types.MessageOwnerChangeStatusRequest) (*types.ApiResponse, error) {
 	// todo: add your logic here and delete this line
 
 	return &types.ApiResponse{}, nil
