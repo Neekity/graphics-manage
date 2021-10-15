@@ -43,16 +43,16 @@ func (m *defaultRoleModel) UpdateOrCreate(id uint, RoleInfo Role, permissionIds 
 	var permissions []Permission
 
 	err := m.GormDB.Transaction(func(tx *gorm.DB) error {
-		if err := m.GormDB.Model(&Role{}).Where("id = ?", id).Assign(RoleInfo).FirstOrCreate(&role).Error; err != nil {
+		if err := tx.Model(&Role{}).Where("id = ?", id).Assign(RoleInfo).FirstOrCreate(&role).Error; err != nil {
 			return err
 		}
-		if err := m.GormDB.Where(&GraphicsCasbinRule{Ptype: constant.CasbinPolicy, V0: role.CasbinRole}).Delete(&GraphicsCasbinRule{}).Error; err != nil {
+		if err := tx.Where(&GraphicsCasbinRule{Ptype: constant.CasbinPolicy, V0: role.CasbinRole}).Delete(&GraphicsCasbinRule{}).Error; err != nil {
 			return err
 		}
 		if err := enforce.LoadPolicy(); err != nil {
 			return err
 		}
-		if err := m.GormDB.Model(&Permission{}).Find(&permissions, permissionIds).Error; err != nil {
+		if err := tx.Model(&Permission{}).Find(&permissions, permissionIds).Error; err != nil {
 			return err
 		}
 		for _, permission := range permissions {

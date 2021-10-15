@@ -69,10 +69,10 @@ type SearchMaterialRequest struct {
 }
 
 type PublishMaterialRequest struct {
-	Id        int      `json:"id"`
-	Receivers []string `json:"receivers"`
-	SendTime  string   `json:"send_time"`
-	Author    string   `json:"author"`
+	Receivers string `json:"receivers"`
+	SendTime  string `json:"send_time"`
+	Author    string `json:"author"`
+	Id        int    `json:"id"`
 }
 
 type DeleteMenuRequest struct {

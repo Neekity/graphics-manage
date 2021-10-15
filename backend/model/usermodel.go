@@ -16,7 +16,7 @@ type (
 		UpdateOrCreate(email string, userInfo User) (*User, error)
 		Delete(id uint) error
 		GetUserRoles(id uint, enforce *casbin.Enforcer) ([]Role, error)
-		Assign(id uint, casbinRoles []string, enforce *casbin.Enforcer) error
+		Assign(id uint, casbinRoles []string) error
 		GetUserInfo(userId uint, enforce *casbin.Enforcer) (*UserInfo, error)
 	}
 
@@ -72,27 +72,30 @@ func (m *defaultUserModel) GetUserInfo(userId uint, enforce *casbin.Enforcer) (*
 	return &userInfo, nil
 }
 
-func (m *defaultUserModel) Assign(id uint, casbinRoles []string, enforce *casbin.Enforcer) error {
-	err := m.GormDB.Transaction(func(tx *gorm.DB) error {
-		if err := enforce.LoadPolicy(); err != nil {
+func (m *defaultUserModel) Assign(id uint, casbinRoles []string) error {
+	return m.GormDB.Transaction(func(tx *gorm.DB) error {
+		userId := strconv.Itoa(int(id))
+		if err := tx.Where(GraphicsCasbinRule{
+			Ptype: constant.CasbinDefaultRole,
+			V0:    userId,
+		}).Delete(GraphicsCasbinRule{}).Error; err != nil {
 			return err
 		}
-		if _, err := enforce.RemoveFilteredNamedGroupingPolicy(constant.CasbinDefaultRole, 0, strconv.Itoa(int(id))); err != nil {
-			return err
-		}
-		var rules [][]string
+		var models []GraphicsCasbinRule
 		for _, role := range casbinRoles {
-			rules = append(rules, []string{strconv.Itoa(int(id)), role})
+			models = append(models, GraphicsCasbinRule{
+				Ptype: constant.CasbinDefaultRole,
+				V0:    userId,
+				V1:    role,
+			})
 		}
 
-		if _, err := enforce.AddNamedGroupingPolicies(constant.CasbinDefaultRole, rules); err != nil {
+		if err := tx.Create(&models).Error; err != nil {
 			return err
 		}
 
 		return nil
 	})
-
-	return err
 }
 
 func (m *defaultUserModel) GetUserRoles(id uint, enforce *casbin.Enforcer) ([]Role, error) {
@@ -105,6 +108,9 @@ func (m *defaultUserModel) GetUserRoles(id uint, enforce *casbin.Enforcer) ([]Ro
 		var role Role
 
 		if err := m.GormDB.Model(&Role{}).Where("casbin_role = ?", policy[1]).First(&role).Error; err != nil {
+			if err == GormErrNotFound {
+				continue
+			}
 			return nil, err
 		}
 

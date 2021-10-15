@@ -25,7 +25,7 @@ func NewAssignRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) AssignR
 }
 
 func (l *AssignRoleLogic) AssignRole(req types.AssignRolerRequest) (*types.ApiResponse, error) {
-	err := l.svcCtx.UserModel.Assign(req.Id, req.CasbinRoles, l.svcCtx.GraphicsCasbinRuleEnforce)
+	err := l.svcCtx.UserModel.Assign(req.Id, req.CasbinRoles)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

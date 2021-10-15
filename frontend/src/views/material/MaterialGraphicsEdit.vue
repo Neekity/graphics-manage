@@ -641,8 +641,7 @@ export default {
 
       this.$graphicsHttp('post', '/material/publish', {
         id: this.materialId,
-        receivers: receivers,
-        channel_id: this.channel,
+        receivers: JSON.stringify(receivers),
         send_time: this.sendTime,
         author: this.author,
       }).then(response => {

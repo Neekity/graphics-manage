@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"go-project/graphics-manage/backend/api/internal/logic/material"
 	"go-project/graphics-manage/backend/api/internal/svc"
@@ -12,14 +13,15 @@ import (
 
 func MaterialPublishHandler(ctx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.SearchMaterialRequest
+		var req types.PublishMaterialRequest
 		if err := httpx.Parse(r, &req); err != nil {
 			httpx.Error(w, err)
 			return
 		}
 
 		l := logic.NewMaterialPublishLogic(r.Context(), ctx)
-		resp, err := l.MaterialPublish(req)
+		userId, err := strconv.Atoi(r.Header.Get("UserId"))
+		resp, err := l.MaterialPublish(req, userId)
 		if err != nil {
 			httpx.Error(w, err)
 		} else {
