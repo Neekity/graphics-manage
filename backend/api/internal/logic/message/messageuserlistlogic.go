@@ -2,6 +2,8 @@ package logic
 
 import (
 	"context"
+	"go-project/graphics-manage/backend/common/constant"
+	"go-project/graphics-manage/backend/common/helper"
 
 	"go-project/graphics-manage/backend/api/internal/svc"
 	"go-project/graphics-manage/backend/api/internal/types"
@@ -23,8 +25,14 @@ func NewMessageUserListLogic(ctx context.Context, svcCtx *svc.ServiceContext) Me
 	}
 }
 
-func (l *MessageUserListLogic) MessageUserList(req types.SearchMessageRequest) (*types.ApiResponse, error) {
-	// todo: add your logic here and delete this line
-
-	return &types.ApiResponse{}, nil
+func (l *MessageUserListLogic) MessageUserList(req types.SearchMessageRequest, userId string) (*types.ApiResponse, error) {
+	messages, err := l.svcCtx.GraphicsMessageModel.List(req.Title, req.ChannelId)
+	if err != nil {
+		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
+	}
+	messages, err = l.svcCtx.GraphicsMessageModel.FilterMessage(l.svcCtx.GraphicsCasbinRuleEnforce, messages, userId, constant.CasbinPermissionRead)
+	if err != nil {
+		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
+	}
+	return (*types.ApiResponse)(helper.ApiSuccess(messages)), nil
 }

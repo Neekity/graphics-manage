@@ -128,12 +128,12 @@ func RegisterHandlers(engine *rest.Server, serverCtx *svc.ServiceContext) {
 					Handler: message.MessageOwnerDetailHandler(serverCtx),
 				},
 				{
-					Method:  http.MethodPost,
+					Method:  http.MethodGet,
 					Path:    "/message/user/list",
 					Handler: message.MessageUserListHandler(serverCtx),
 				},
 				{
-					Method:  http.MethodPost,
+					Method:  http.MethodGet,
 					Path:    "/message/user/detail",
 					Handler: message.MessageUserDetailHandler(serverCtx),
 				},

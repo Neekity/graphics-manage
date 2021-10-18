@@ -15,19 +15,18 @@ import (
 )
 
 type ServiceContext struct {
-	Config                       config.Config
-	AccessLog                    rest.Middleware
-	CheckDataPermission          rest.Middleware
-	Auth                         rest.Middleware
-	GraphicsCasbinRuleEnforce    *casbin.Enforcer
-	GraphicsChannelModel         model.GraphicsChannelModel
-	GraphicsMaterialModel        model.GraphicsMaterialModel
-	GraphicsMessageReceiverModel model.GraphicsMessageReceiverModel
-	GraphicsMessageModel         model.GraphicsMessageModel
-	UserModel                    model.UserModel
-	RoleModel                    model.RoleModel
-	PermissionModel              model.PermissionModel
-	MenuModel                    model.MenuModel
+	Config                    config.Config
+	AccessLog                 rest.Middleware
+	CheckDataPermission       rest.Middleware
+	Auth                      rest.Middleware
+	GraphicsCasbinRuleEnforce *casbin.Enforcer
+	GraphicsChannelModel      model.GraphicsChannelModel
+	GraphicsMaterialModel     model.GraphicsMaterialModel
+	GraphicsMessageModel      model.GraphicsMessageModel
+	UserModel                 model.UserModel
+	RoleModel                 model.RoleModel
+	PermissionModel           model.PermissionModel
+	MenuModel                 model.MenuModel
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -50,18 +49,17 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		panic(err)
 	}
 	return &ServiceContext{
-		Config:                       c,
-		AccessLog:                    middleware.NewAccessLogMiddleware().Handle,
-		CheckDataPermission:          middleware.NewCheckDataPermissionMiddleware(e).Handle,
-		Auth:                         middleware.NewAuthMiddleware(c.JwtAuth.AccessSecret, e).Handle,
-		GraphicsCasbinRuleEnforce:    e,
-		GraphicsChannelModel:         model.NewGraphicsChannelModel(gdb),
-		GraphicsMaterialModel:        model.NewGraphicsMaterialModel(gdb),
-		GraphicsMessageReceiverModel: model.NewGraphicsMessageReceiverModel(gdb),
-		GraphicsMessageModel:         model.NewGraphicsMessageModel(gdb),
-		UserModel:                    model.NewUserModel(gdb),
-		RoleModel:                    model.NewRoleModel(gdb),
-		PermissionModel:              model.NewPermissionModel(gdb),
-		MenuModel:                    model.NewMenuModel(gdb),
+		Config:                    c,
+		AccessLog:                 middleware.NewAccessLogMiddleware().Handle,
+		CheckDataPermission:       middleware.NewCheckDataPermissionMiddleware(e).Handle,
+		Auth:                      middleware.NewAuthMiddleware(c.JwtAuth.AccessSecret, e).Handle,
+		GraphicsCasbinRuleEnforce: e,
+		GraphicsChannelModel:      model.NewGraphicsChannelModel(gdb),
+		GraphicsMaterialModel:     model.NewGraphicsMaterialModel(gdb),
+		GraphicsMessageModel:      model.NewGraphicsMessageModel(gdb),
+		UserModel:                 model.NewUserModel(gdb),
+		RoleModel:                 model.NewRoleModel(gdb),
+		PermissionModel:           model.NewPermissionModel(gdb),
+		MenuModel:                 model.NewMenuModel(gdb),
 	}
 }

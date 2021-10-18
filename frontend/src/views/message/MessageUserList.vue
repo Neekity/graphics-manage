@@ -49,7 +49,55 @@
 
       </v-card-title>
       <v-card-text>
+        <v-data-table
+            v-if="showTable"
+            :headers="headers"
+            :items="messages"
+            item-key="id"
+            class="elevation-0"
+            :footer-props="{
+              showFirstLastPage: true,
+              firstIcon: 'mdi-arrow-collapse-left',
+              lastIcon: 'mdi-arrow-collapse-right',
+              prevIcon: 'mdi-minus',
+              nextIcon: 'mdi-plus'
+            }"
+        >
+          <template v-slot:item.actions="{ item }">
+            <v-btn
+                class="mr-2"
+                color="blue darken-2"
+                icon
+                @click="view(item.id)"
+            ><v-icon>
+              mdi-eye
+            </v-icon></v-btn>
+            <v-btn
+                class="mr-2"
+                color="red darken-2"
+                icon
+                @click="confirm(item.id)"
+            ><v-icon>
+              mdi-delete
+            </v-icon></v-btn>
+          </template>
+          <template v-slot:no-data>
+            <v-btn
+                color="primary"
+                @click="initialize"
+            >
+              Reset
+            </v-btn>
+          </template>
+          <template v-slot:item.title="{ item }">
+            <TextTruncate :text="item.title"></TextTruncate>
+          </template>
+          <template v-slot:item.abstract="{ item }">
+            <TextTruncate :text="item.abstract"></TextTruncate>
+          </template>
+        </v-data-table>
         <v-lazy
+            v-if="!showTable"
             v-model="isActive"
             :options="{
           threshold: .5
@@ -97,42 +145,85 @@
 </template>
 <script>
 export default {
-  name: 'MessageMasonry',
+  name: 'MessageUserList',
   data() {
     return {
       isActive: false,
       messages: [],
       overlay: false,
+      channel: 0,
+      showTable:false,
+      channelItems: [],
       title: "",
-      channel: null,
-      channelItems: [{id: '1', name: '宫傲'}, {id: 2, name: '够阿斯顿'}]
+      headers: [{
+        text: '标题',
+        align: 'start',
+        value: 'title',
+      },
+        {text: '摘要', value: 'abstract', sortable: false},
+        {text: '作者', value: 'author', sortable: false},
+        {text: '发送时间', value: 'send_time', sortable: false},
+        {text: '操作', value: 'actions', sortable: false},
+      ],
     }
   },
   created() {
     this.getUserMessage();
+    this.getChannels();
   },
   watch: {
     channel: function () {
-        console.log(this.channel);
+      this.getUserMessage()
     }
   },
   methods: {
+    getUserChannels() {
+      this.overlay += 1;
+      this.$graphicsHttp('get', 'message/channels')
+          .then(response => {
+            let resData = response.data;
+            if (resData.code === 0) {
+              this.channelItems = resData.data || [];
+            } else {
+              this.$toast('获取频道出错：' + resData.message, {
+                type: 'error',
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            this.$toast('获取频道出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay -= 1);
+    },
     getUserMessage() {
-      this.messages = [
-        {
-          id: 1,
-          title: '图文素材1',
-          abstract: '123asfaf123',
-          cover_picture_url: 'https://oa-test-knzn02.oss-cn-hongkong.aliyuncs.com/graphics/2021-09-08/19612-5480668e3dfe10f449bd01a62c2a6986?OSSAccessKeyId=LTAI4Fv4DUBzjMg5qjWyudpN&Expires=2261817152&Signature=o3B1qfWYkAul8KCI%2B4E%2FbF4jtdQ%3D',
-          content: '<p>请在此输入正文<img src="https://oa-test-knzn02.oss-cn-hongkong.aliyuncs.com/graphics/2021-09-08/19612-5480668e3dfe10f449bd01a62c2a6986?OSSAccessKeyId=LTAI4Fv4DUBzjMg5qjWyudpN&amp;Expires=2261817152&amp;Signature=o3B1qfWYkAul8KCI%2B4E%2FbF4jtdQ%3D" alt="" width="768" height="475" /><img src="https://oa-test-knzn02.oss-cn-hongkong.aliyuncs.com/graphics/2021-09-08/19612-5480668e3dfe10f449bd01a62c2a6986?OSSAccessKeyId=LTAI4Fv4DUBzjMg5qjWyudpN&amp;Expires=2261817152&amp;Signature=o3B1qfWYkAul8KCI%2B4E%2FbF4jtdQ%3D" alt="" /></p>\n' +
-              '<p>&nbsp;</p>\n' +
-              '<p><img src="https://oa-test-knzn02.oss-cn-hongkong.aliyuncs.com/graphics/2021-08-23/19597-b9a531f8fcc8e864e1dee7be3ec088e5?OSSAccessKeyId=LTAI4Fv4DUBzjMg5qjWyudpN&amp;Expires=2260418962&amp;Signature=QawtpgimFQAoSAx%2B5N05VQNsXnI%3D" alt="" /></p>',
-          send_time: '2021-11-11 12:23:12',
+      this.overlay += 1;
+      this.$graphicsHttp('get', 'message/user/list', {
+        title: this.title,
+      }).then(response => {
+        let resData = response.data;
+        if (resData.code === 0) {
+          this.messages = resData.data || [];
+        } else {
+          this.$toast('获取消息列表出错：' + resData.message, {
+            type: 'error',
+          });
         }
-      ];
+      })
+          .catch(error => {
+            console.log(error);
+            this.$toast('获取消息列表出错：服务器出错！', {
+              type: 'error',
+              timeout: 2000,
+            });
+          })
+          .finally(() => this.overlay -= 1);
     },
     view(id) {
-      location.href = '/graphics/message/user/' + id;
+      location.href = '/message-user/show?id=' + id;
     },
   },
 }

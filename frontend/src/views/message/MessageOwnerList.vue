@@ -92,21 +92,22 @@
             }"
         >
           <template v-slot:item.actions="{ item }">
-            <v-icon
-                small
+            <v-btn
                 class="mr-2"
                 color="blue darken-2"
-                @click="edit(item.id)"
-            >
-              mdi-pencil
-            </v-icon>
-            <v-icon
-                small
+                icon
+                @click="view(item.id)"
+            ><v-icon>
+              mdi-eye
+            </v-icon></v-btn>
+            <v-btn
+                class="mr-2"
                 color="red darken-2"
+                icon
                 @click="confirm(item.id)"
-            >
+            ><v-icon>
               mdi-delete
-            </v-icon>
+            </v-icon></v-btn>
           </template>
           <template v-slot:no-data>
             <v-btn
@@ -116,8 +117,8 @@
               Reset
             </v-btn>
           </template>
-          <template v-slot:item.name="{ item }">
-            <TextTruncate :text="item.name"></TextTruncate>
+          <template v-slot:item.title="{ item }">
+            <TextTruncate :text="item.title"></TextTruncate>
           </template>
           <template v-slot:item.abstract="{ item }">
             <TextTruncate :text="item.abstract"></TextTruncate>
@@ -155,6 +156,26 @@
                   <v-card-subtitle class="text-h6">
                     {{ message.abstract }}
                   </v-card-subtitle>
+                  <v-divider></v-divider>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        class="mr-2"
+                        color="blue darken-2"
+                        icon
+                        @click="view(item.id)"
+                    ><v-icon>
+                      mdi-eye
+                    </v-icon></v-btn>
+                    <v-btn
+                        class="mr-2"
+                        color="red darken-2"
+                        icon
+                        @click="confirm(item.id)"
+                    ><v-icon>
+                      mdi-delete
+                    </v-icon></v-btn>
+                  </v-card-actions>
                 </v-card>
               </v-col>
             </v-row>
@@ -182,9 +203,18 @@ export default {
       overlay: false,
       title: "",
       channel: 0,
-      headers:[],
       showTable:false,
-      channelItems: []
+      channelItems: [],
+      headers: [{
+        text: '标题',
+        align: 'start',
+        value: 'title',
+      },
+        {text: '摘要', value: 'abstract', sortable: false},
+        {text: '作者', value: 'author', sortable: false},
+        {text: '发送时间', value: 'send_time', sortable: false},
+        {text: '操作', value: 'actions', sortable: false},
+      ],
     }
   },
   created() {
@@ -193,7 +223,7 @@ export default {
   },
   watch: {
     channel: function () {
-        this.getChannels()
+        this.getOwnerMessage()
     }
   },
   methods: {
@@ -235,7 +265,7 @@ export default {
           })
           .catch(error => {
             console.log(error);
-            this.$toast('保存出错：服务器出错！', {
+            this.$toast('获取频道出错：服务器出错！', {
               type: 'error',
               timeout: 2000,
             });

@@ -49,17 +49,26 @@ func (m *CheckDataPermissionMiddleware) Handle(next http.HandlerFunc) http.Handl
 			httpx.OkJson(w, helper.ApiError(err.Error(), nil))
 		}
 
+		dataType := constant.CasbinPermissionWrite
+		if strings.ToUpper(r.Method) == http.MethodGet {
+			dataType = constant.CasbinPermissionRead
+		}
+
 		if data.ID != 0 {
 			dataPermission := fmt.Sprintf(constant.CasbinMaterialPolicy, data.ID)
 			if strings.Contains(r.URL.Path, "message") {
 				dataPermission = fmt.Sprintf(constant.CasbinMessagePolicy, data.ID)
 			}
-			if flag, _ := m.enforcer.Enforce(userId, dataPermission, constant.CasbinPermissionWrite); flag {
+
+			if flag, _ := m.enforcer.Enforce(userId, dataPermission, dataType); flag {
 				next(w, r)
 				return
 			}
 		}
-
+		if dataType == constant.CasbinPermissionRead {
+			next(w, r)
+			return
+		}
 		if data.ChannelId != 0 {
 			if flag := m.enforcer.HasGroupingPolicy(userId, fmt.Sprintf(constant.CasbinChannelRole, data.ChannelId)); flag {
 				next(w, r)

@@ -17,9 +17,9 @@ func MessageUserListHandler(ctx *svc.ServiceContext) http.HandlerFunc {
 			httpx.Error(w, err)
 			return
 		}
-
+		userId := r.Header.Get("UserId")
 		l := logic.NewMessageUserListLogic(r.Context(), ctx)
-		resp, err := l.MessageUserList(req)
+		resp, err := l.MessageUserList(req, userId)
 		if err != nil {
 			httpx.Error(w, err)
 		} else {

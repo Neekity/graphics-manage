@@ -8,13 +8,14 @@ import (
 	"go-project/graphics-manage/backend/common/constant"
 	"go-project/graphics-manage/backend/common/helper"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type (
 	GraphicsMessageModel interface {
 		Create(message GraphicsMessage) (*GraphicsMessage, error)
-		OwnerList(title string, channelId int) ([]GraphicsMessage, error)
-		FilterMessage(enforcer *casbin.Enforcer, messages []GraphicsMessage, userId string) ([]GraphicsMessage, error)
+		List(title string, channelId int) ([]GraphicsMessage, error)
+		FilterMessage(enforcer *casbin.Enforcer, messages []GraphicsMessage, userId string, dataType string) ([]GraphicsMessage, error)
 		OwnerDetail(id int) (*MessageOwnerDetail, error)
 		UserDetail(id int) (*MessageUserDetail, error)
 	}
@@ -116,7 +117,7 @@ func (m *defaultGraphicsMessageModel) findOne(id int) (*GraphicsMessage, error) 
 	return &message, nil
 }
 
-func (m *defaultGraphicsMessageModel) OwnerList(title string, channelId int) ([]GraphicsMessage, error) {
+func (m *defaultGraphicsMessageModel) List(title string, channelId int) ([]GraphicsMessage, error) {
 	var messages []GraphicsMessage
 	query := m.GormDB.Table(m.table)
 	if title != "" {
@@ -131,7 +132,7 @@ func (m *defaultGraphicsMessageModel) OwnerList(title string, channelId int) ([]
 	return messages, nil
 }
 
-func (m *defaultGraphicsMessageModel) FilterMessage(enforcer *casbin.Enforcer, messages []GraphicsMessage, userId string) ([]GraphicsMessage, error) {
+func (m *defaultGraphicsMessageModel) FilterMessage(enforcer *casbin.Enforcer, messages []GraphicsMessage, userId string, dataType string) ([]GraphicsMessage, error) {
 	if err := enforcer.LoadPolicy(); err != nil {
 		return nil, err
 	}
@@ -142,7 +143,7 @@ func (m *defaultGraphicsMessageModel) FilterMessage(enforcer *casbin.Enforcer, m
 		}
 	}).ForEach(func(material interface{}) {
 		temp := material.(GraphicsMessage)
-		if flag, _ := enforcer.Enforce(userId, fmt.Sprintf(constant.CasbinMessagePolicy, temp.ID), constant.CasbinPermissionWrite); flag {
+		if flag, _ := enforcer.Enforce(userId, fmt.Sprintf(constant.CasbinMessagePolicy, temp.ID), dataType); flag {
 			results = append(results, temp)
 		}
 	})
@@ -159,23 +160,21 @@ func (m *defaultGraphicsMessageModel) Create(message GraphicsMessage) (*Graphics
 		if err := json.Unmarshal([]byte(message.Receivers), &receivers); err != nil {
 			return err
 		}
-		var messageReceivers []GraphicsMessageReceiver
+		var casbinModels []GraphicsCasbinRule
 		for _, receiver := range receivers {
-			messageReceivers = append(messageReceivers, GraphicsMessageReceiver{
-				MessageID:    message.ID,
-				ReceiverId:   receiver.Id,
-				ReceiverName: receiver.Name,
+			casbinModels = append(casbinModels, GraphicsCasbinRule{
+				Ptype: constant.CasbinPolicy,
+				V0:    strconv.Itoa(receiver.Id),
+				V1:    fmt.Sprintf(constant.CasbinMessagePolicy, message.ID),
+				V2:    constant.CasbinPermissionRead,
 			})
 		}
-		if err := tx.Create(&messageReceivers).Error; err != nil {
-			return err
-		}
-		casbinModel := GraphicsCasbinRule{
+		casbinModels = append(casbinModels, GraphicsCasbinRule{
 			Ptype: constant.CasbinResourceRole,
 			V0:    fmt.Sprintf(constant.CasbinMessagePolicy, message.ID),
 			V1:    fmt.Sprintf(constant.CasbinChannelMessageResourceRole, message.ChannelID),
-		}
-		if err := tx.Create(&casbinModel).Error; err != nil {
+		})
+		if err := tx.Create(&casbinModels).Error; err != nil {
 			return err
 		}
 		return nil
