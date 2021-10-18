@@ -150,7 +150,7 @@ export default {
     return {
       isActive: false,
       messages: [],
-      overlay: false,
+      overlay: 0,
       channel: 0,
       showTable:false,
       channelItems: [],
@@ -169,7 +169,7 @@ export default {
   },
   created() {
     this.getUserMessage();
-    this.getChannels();
+    this.getUserChannels();
   },
   watch: {
     channel: function () {
@@ -179,7 +179,7 @@ export default {
   methods: {
     getUserChannels() {
       this.overlay += 1;
-      this.$graphicsHttp('get', 'message/channels')
+      this.$graphicsHttp('post', 'message/user/channels',{data_type:"read"})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
@@ -201,8 +201,8 @@ export default {
     },
     getUserMessage() {
       this.overlay += 1;
-      this.$graphicsHttp('get', 'message/user/list', {
-        title: this.title,
+      this.$graphicsHttp('post', 'message/user/list', {
+        title: this.title,channel_id: this.channel,data_type:"read"
       }).then(response => {
         let resData = response.data;
         if (resData.code === 0) {
@@ -223,7 +223,7 @@ export default {
           .finally(() => this.overlay -= 1);
     },
     view(id) {
-      location.href = '/message-user/show?id=' + id;
+      window.open('/message-user/show?id=' + id);
     },
   },
 }

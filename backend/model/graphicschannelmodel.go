@@ -13,11 +13,12 @@ import (
 
 type (
 	GraphicsChannelModel interface {
-		ChannelOwner(channelIds []int) ([]GraphicsChannel, error)
+		GetChannels(channelIds []int) ([]GraphicsChannel, error)
 		ChannelList(name string) ([]GraphicsChannel, error)
 		UpdateOrCreate(id int, channelInfo GraphicsChannel, owners []ChannelOwner, enforce *casbin.Enforcer) (*GraphicsChannel, error)
 		FindOne(id int, enforce *casbin.Enforcer) (*ChannelDetail, error)
 		GetOwnerChannels(userId string, enforcer *casbin.Enforcer) ([]int, error)
+		GetUserChannels(userId string) ([]int, error)
 	}
 
 	defaultGraphicsChannelModel struct {
@@ -44,6 +45,31 @@ type (
 		Name string `json:"name"`
 	}
 )
+
+func (m *defaultGraphicsChannelModel) GetUserChannels(userId string) ([]int, error) {
+	var results []string
+	if err := m.GormDB.Model(&GraphicsCasbinRule{}).Where("ptype = ?", constant.CasbinPolicy).
+		Where("v0 = ?", userId).Pluck("v1", &results).Error; err != nil {
+		return nil, err
+	}
+	var channelIds []int
+	for _, item := range results {
+		subject := strings.Split(item, constant.CasbinPermissionSymbol)
+		if len(subject) != 3 || !strings.Contains(item, constant.CasbinMessagePolicy[:len(constant.CasbinChannelRole)-2]) {
+			continue
+		}
+		messageId, err := strconv.Atoi(subject[2])
+		if err != nil {
+			return nil, err
+		}
+		var message GraphicsMessage
+		if err := m.GormDB.Model(&GraphicsMessage{}).First(&message, messageId).Error; err != nil {
+			continue
+		}
+		channelIds = append(channelIds, message.ChannelID)
+	}
+	return channelIds, nil
+}
 
 func (m *defaultGraphicsChannelModel) GetOwnerChannels(userId string, enforcer *casbin.Enforcer) ([]int, error) {
 	var results []int
@@ -167,7 +193,7 @@ func (m *defaultGraphicsChannelModel) ChannelList(name string) ([]GraphicsChanne
 	return channels, nil
 }
 
-func (m *defaultGraphicsChannelModel) ChannelOwner(channelIds []int) ([]GraphicsChannel, error) {
+func (m *defaultGraphicsChannelModel) GetChannels(channelIds []int) ([]GraphicsChannel, error) {
 	var channels []GraphicsChannel
 
 	if err := m.GormDB.Table(m.table).Find(&channels, channelIds).Error; err != nil {

@@ -19,8 +19,9 @@ type CheckDataPermissionMiddleware struct {
 }
 
 type Data struct {
-	ID        int `json:"id"`
-	ChannelId int `json:"channel_id"`
+	ID        int    `json:"id"`
+	ChannelId int    `json:"channel_id"`
+	DataType  string `json:"data_type"`
 }
 
 func NewCheckDataPermissionMiddleware(enforcer *casbin.Enforcer) *CheckDataPermissionMiddleware {
@@ -50,7 +51,7 @@ func (m *CheckDataPermissionMiddleware) Handle(next http.HandlerFunc) http.Handl
 		}
 
 		dataType := constant.CasbinPermissionWrite
-		if strings.ToUpper(r.Method) == http.MethodGet {
+		if len(data.DataType) > 0 && data.DataType == constant.CasbinPermissionRead {
 			dataType = constant.CasbinPermissionRead
 		}
 
@@ -64,28 +65,30 @@ func (m *CheckDataPermissionMiddleware) Handle(next http.HandlerFunc) http.Handl
 				next(w, r)
 				return
 			}
-		}
-		if dataType == constant.CasbinPermissionRead {
-			next(w, r)
-			return
-		}
-		if data.ChannelId != 0 {
-			if flag := m.enforcer.HasGroupingPolicy(userId, fmt.Sprintf(constant.CasbinChannelRole, data.ChannelId)); flag {
-				next(w, r)
-				return
-			}
 		} else {
-			policy := m.enforcer.GetFilteredNamedGroupingPolicy(constant.CasbinDefaultRole,
-				0, userId)
-			for _, item := range policy {
-				role := strings.Split(item[1], constant.CasbinPermissionSymbol)
-				if len(role) != 3 || !strings.Contains(item[1], constant.CasbinChannelRole[:len(constant.CasbinChannelRole)-2]) {
-					continue
-				}
+			if dataType == constant.CasbinPermissionRead {
 				next(w, r)
 				return
 			}
+			if data.ChannelId != 0 {
+				if flag := m.enforcer.HasGroupingPolicy(userId, fmt.Sprintf(constant.CasbinChannelRole, data.ChannelId)); flag {
+					next(w, r)
+					return
+				}
+			} else {
+				policy := m.enforcer.GetFilteredNamedGroupingPolicy(constant.CasbinDefaultRole,
+					0, userId)
+				for _, item := range policy {
+					role := strings.Split(item[1], constant.CasbinPermissionSymbol)
+					if len(role) != 3 || !strings.Contains(item[1], constant.CasbinChannelRole[:len(constant.CasbinChannelRole)-2]) {
+						continue
+					}
+					next(w, r)
+					return
+				}
+			}
 		}
+
 		httpx.OkJson(w, helper.ApiError("您没有该资源的权限！", nil))
 	}
 }

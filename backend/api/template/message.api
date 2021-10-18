@@ -39,11 +39,11 @@ service graphics-api {
     post /message/owner/detail (MessageDetailRequest) returns (ApiResponse)
 
     @handler MessageUserList
-    get /message/user/list (SearchMessageRequest) returns (ApiResponse)
+    post /message/user/list (SearchMessageRequest) returns (ApiResponse)
 
     @handler MessageUserDetail
-    get /message/user/detail (MessageDetailRequest) returns (ApiResponse)
+    post /message/user/detail (MessageDetailRequest) returns (ApiResponse)
 
     @handler MessageUserChannels
-    get /message/user/channels () returns (ApiResponse)
+    post /message/user/channels () returns (ApiResponse)
 }

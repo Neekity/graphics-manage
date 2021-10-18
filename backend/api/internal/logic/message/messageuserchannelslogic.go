@@ -10,22 +10,22 @@ import (
 	"github.com/tal-tech/go-zero/core/logx"
 )
 
-type MaterialChannelsLogic struct {
+type MessageUserChannelsLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewMaterialChannelsLogic(ctx context.Context, svcCtx *svc.ServiceContext) MaterialChannelsLogic {
-	return MaterialChannelsLogic{
+func NewMessageUserChannelsLogic(ctx context.Context, svcCtx *svc.ServiceContext) MessageUserChannelsLogic {
+	return MessageUserChannelsLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *MaterialChannelsLogic) MaterialChannels(userId string) (*types.ApiResponse, error) {
-	channelIds, err := l.svcCtx.GraphicsChannelModel.GetOwnerChannels(userId, l.svcCtx.GraphicsCasbinRuleEnforce)
+func (l *MessageUserChannelsLogic) MessageUserChannels(userId string) (*types.ApiResponse, error) {
+	channelIds, err := l.svcCtx.GraphicsChannelModel.GetUserChannels(userId)
 	if err != nil {
 		return (*types.ApiResponse)(helper.ApiError(err.Error(), nil)), nil
 	}

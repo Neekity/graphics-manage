@@ -129,7 +129,8 @@ const routes = [
         name: 'MessageUserShow',
         meta: {
             title: '用户消息详情',
-            authCheck: true
+            authCheck: true,
+            hideNav: true
         },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
@@ -142,7 +143,6 @@ const routes = [
         meta: {
             title: '消息详情',
             authCheck: true,
-            hideNav: true
         },
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route

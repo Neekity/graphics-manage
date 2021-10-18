@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <div v-if="!showNav">
-      <v-container fluid><router-view></router-view></v-container>
+      <router-view></router-view>
     </div>
     <div v-if="showNav">
       <v-navigation-drawer

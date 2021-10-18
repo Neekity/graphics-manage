@@ -106,7 +106,20 @@ func (m *defaultGraphicsMessageModel) OwnerDetail(id int) (*MessageOwnerDetail, 
 }
 
 func (m *defaultGraphicsMessageModel) UserDetail(id int) (*MessageUserDetail, error) {
-	panic("implement me")
+	message, err := m.findOne(id)
+	if err != nil {
+		return nil, err
+	}
+	sendAt := message.SendAt.Format("2006-01-02")
+	subTitle := sendAt
+	if len(message.Author) != 0 {
+		subTitle = message.Author + " " + sendAt
+	}
+	return &MessageUserDetail{
+		Title:    message.Title,
+		Content:  message.Content,
+		SubTitle: subTitle,
+	}, nil
 }
 
 func (m *defaultGraphicsMessageModel) findOne(id int) (*GraphicsMessage, error) {
