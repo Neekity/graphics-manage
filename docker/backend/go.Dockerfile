@@ -6,10 +6,10 @@ FROM golang:${GO_VERSION}
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
     GOOS=linux \
-    GOARCH=amd64 \
+    GOARCH=arm64 \
     GOPROXY=https://goproxy.cn
 
 # 移动到工作目录：/build
 WORKDIR /data
 
-RUN go get -u github.com/cosmtrek/air
+RUN go install github.com/cosmtrek/air@latest
