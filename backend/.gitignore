@@ -15,4 +15,5 @@
 # vendor/
 /toml
 /yaml
+/tmp
 /resource/image/*

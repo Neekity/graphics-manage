@@ -116,12 +116,10 @@ type JwtTokenResponse struct {
 }
 
 type BasicUserInfo struct {
-	Id       int    `json:"id"`
-	Userid   string `json:"userid"`
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Avatar   string `json:"avatar"`
-	Position string `json:"position"`
+	Id    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Photo string `json:"photo"`
 }
 
 type UserInfo struct {
