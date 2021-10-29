@@ -49,5 +49,7 @@ module.exports = {
             }
         }
         copyFolderRecursiveSync('/data/node_modules/tinymce/skins','/data/public/tinymce')
+        copyFileSync('/data/node_modules/tinymce/plugins/emoticons/js/emojis.js',
+            '/data/public/tinymce/plugins/emoticons/js/emojis.js')
     }
 }
