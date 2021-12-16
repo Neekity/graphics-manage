@@ -1,7 +1,7 @@
 Name: graphics-api
 Host: 0.0.0.0
 Port: 80
-DataSource: root:123456@tcp(htc.oa.com:3306)/graphics?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai
+DataSource: root:123456@tcp(127.0.0.1:3306)/graphics?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai
 UserInfoUrl: https://neekity-graphics.authing.cn/oidc/me
 ClientID: 617b6b12bac728cc2d81447f
 ClientSecret: b4e3dc5731dbdc0975a556d37c99ff7b
