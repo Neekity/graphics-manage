@@ -48,7 +48,7 @@
           </div>
           <tinymce-message-editor @hook:destroyed="editorInit" v-if="showEditor" v-model="content"
                                   :editor-templates="channelTemplates" @getImages="getImages"
-                                  @showSelectImageModal="showSelectImageModal"
+                                  @showSelectMaterialModal="showSelectMaterialModal"
                                   :id="'tinymce-graphics-'+materialId"
                                   :base-url="baseUrl" :channel="channel"></tinymce-message-editor>
         </v-row>
@@ -208,102 +208,113 @@
                 </v-card-text>
               </v-card>
             </v-dialog>
-            <v-dialog v-model="insertImageDialog" width="960">
+            <v-dialog v-model="insertMaterialDialog" width="960">
               <v-card>
-                <v-card-title>
-                  <v-row>
-                    <div class="text-h5 pa-3">点击插入图片</div>
-                    <v-spacer></v-spacer>
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-btn
-                            v-bind="attrs"
-                            v-on="on"
-                            icon
-                            color="blue darken-2"
-                            @click="uploadImageDialog=true"
-                        >
-                          <v-icon>mdi-image-plus</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>上传</span>
-                    </v-tooltip>
-                    <v-dialog
-                        v-model="uploadImageDialog"
-                        width="400"
-                    >
-                      <v-card>
-                        <v-card-title class="pa-4">
-                        </v-card-title>
-                        <v-card-text>
-                          <v-file-input
-                              label="点击选择图片"
-                              filled
-                              accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"
-                              v-model="imageFile"
-                              prepend-icon="mdi-camera"
-                          ></v-file-input>
-                        </v-card-text>
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                              color="success"
-                              :disabled="!imageFile || !channel"
-                              @click="upload"
-                          >
-                            确认上传
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                    <v-overlay :value="overlay">
-                      <v-progress-circular
-                          indeterminate
-                          color="primary"
-                      ></v-progress-circular>
-                    </v-overlay>
-                  </v-row>
-                </v-card-title>
                 <v-card-text>
-                  <v-lazy
-                      v-model="isImageActive"
-                      :options="{
+                  <v-tabs v-model="tab">
+                    <v-tabs-slider></v-tabs-slider>
+                    <v-tab
+                        v-for="item in tabItems"
+                        :key="item"
+                    >{{ item }}
+                    </v-tab>
+                  </v-tabs>
+                  <v-tabs-items v-model="tab">
+                    <v-tab-item
+                        key="图片">
+                      <v-lazy
+                          v-model="isImageActive"
+                          :options="{
           threshold: .5
         }"
-                      min-height="200"
-                      transition="fade-transition"
-                  >
-                    <v-container fluid class="text-center">
-                      <v-row align="center"
-                             justify="center"
-                             class="fill-height"
+                          min-height="200"
+                          transition="fade-transition"
                       >
-                        <v-col
-                            v-for="image in images"
-                            :key="image.id"
-                            cols="12"
-                            lg="3"
-                            md="4"
-                            sm="6"
-                            xs="12"
-                        >
-                          <v-hover v-slot="{ hover }">
-                            <v-card
-                                :elevation="hover ? 12 : 0"
-                                @click="insertImageToContent(image.url)"
+                        <v-container fluid class="text-center">
+                          <v-row align="center"
+                                 justify="center"
+                                 class="fill-height"
+                          >
+                            <v-col
+                                v-for="image in images"
+                                :key="image.id"
+                                cols="12"
+                                lg="3"
+                                md="4"
+                                sm="6"
+                                xs="12"
                             >
-                              <v-img
-                                  height="250"
-                                  contain
-                                  :src="image.url"
-                              >
-                              </v-img>
-                            </v-card>
-                          </v-hover>
-                        </v-col>
-                      </v-row>
-                    </v-container>
-                  </v-lazy>
+                              <v-hover v-slot="{ hover }">
+                                <v-card
+                                    :elevation="hover ? 12 : 0"
+                                    @click="insertImageToContent(image.url)"
+                                >
+                                  <v-img
+                                      height="250"
+                                      contain
+                                      :src="image.url"
+                                  >
+                                  </v-img>
+                                </v-card>
+                              </v-hover>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-lazy>
+                    </v-tab-item>
+                    <v-tab-item
+                        key="模版">
+                      <v-lazy
+                          v-model="isTemplateActive"
+                          :options="{
+          threshold: .5
+        }"
+                          min-height="200"
+                          transition="fade-transition"
+                      >
+                        <v-container fluid>
+                          <v-row>
+                            <v-col
+                                v-for="template in templates"
+                                :key="template.id"
+                                cols="12"
+                                lg="3"
+                                md="4"
+                                sm="6"
+                                xs="12"
+                            >
+                              <v-card>
+                                <v-card-title class="text-h6">
+                                  {{ template.name }}
+                                </v-card-title>
+                                <div class="tinymce-viewer px-2">
+                                  <tinymce-viewer v-model="template.content" :base-url="baseUrl"></tinymce-viewer>
+                                </div>
+                                <v-divider></v-divider>
+                                <v-card-actions class="pt-0">
+                                  <div>更新于 {{ template.updated_at }}</div>
+                                  <v-spacer></v-spacer>
+                                  <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                      <v-btn
+                                          v-bind="attrs"
+                                          v-on="on"
+                                          icon color="blue darken-2"  @click="insertTemplateToContent(template.content)"
+                                      >
+                                        <v-icon>mdi-tray-arrow-down</v-icon>
+                                      </v-btn>
+                                    </template>
+                                    <span>点击插入模版</span>
+                                  </v-tooltip>
+                                </v-card-actions>
+                              </v-card>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-lazy>
+                    </v-tab-item>
+                  </v-tabs-items>
+
                 </v-card-text>
               </v-card>
             </v-dialog>
@@ -450,15 +461,18 @@
 </template>
 
 <script>
+import TinymceViewer from "../../components/tinymce/TinymceViewer";
 let moment = require("moment");
 import TinymceMessageEditor from "../../components/tinymce/TinymceMessageEditor";
 import 'vue2-datepicker/index.css';
 
 export default {
   name: "MaterialGraphicsEdit",
-  components: {TinymceMessageEditor},
+  components: {TinymceViewer, TinymceMessageEditor},
   data() {
     return {
+      tab:null,
+      tabItems: ['图片', '模版'],
       baseUrl: '/tinymce/',
       uploadImageDialog: false,
       imageFile: null,
@@ -488,11 +502,13 @@ export default {
       imageUrl: '',
       content: '',
       isImageActive: null,
+      isTemplateActive: null,
       channelTemplates: [],
+      templates: [],
       selectImage: {},
       images: [],
       selectDialog: false,
-      insertImageDialog: false,
+      insertMaterialDialog: false,
       transparent: 'rgba(255, 255, 255, 0)',
       disableNodeFinished: false,
       systemSet: false,
@@ -649,13 +665,18 @@ export default {
         }
       }
     },
-    showSelectImageModal(){
-      this.insertImageDialog = true;
+    showSelectMaterialModal(){
+      this.insertMaterialDialog = true;
     },
     insertImageToContent(url){
       window.tinymce.get('tinymce-graphics-'+this.materialId).focus();
       window.tinymce.get('tinymce-graphics-'+this.materialId).selection.setContent('<img src="'+url+'" />')
-      this.insertImageDialog = false;
+      this.insertMaterialDialog = false;
+    },
+    insertTemplateToContent(content){
+      window.tinymce.get('tinymce-graphics-'+this.materialId).focus();
+      window.tinymce.get('tinymce-graphics-'+this.materialId).selection.setContent(content)
+      this.insertMaterialDialog = false;
     },
     destroyEditor() {
       this.showEditor = false;
@@ -670,8 +691,8 @@ export default {
             let resData = response.data;
             if (resData.code === 0) {
               this.channelTemplates = [];
-              let templates = resData.data || [];
-              for (let i = 0; i < templates.length; i++) {
+              this.templates = resData.data || [];
+              for (let i = 0; i < this.templates.length; i++) {
                 this.channelTemplates.push({
                       title: resData.data[i].name,
                       description: resData.data[i].abstract,

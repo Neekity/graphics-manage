@@ -103,7 +103,7 @@ export default {
   methods: {
     getChannel() {
       this.overlay = true;
-      this.$http.post('/graphics/material/owner/channel')
+      this.$graphicsHttp('post','/graphics/material/owner/channel')
           .then(response => {
             console.log(JSON.stringify(response.data));
             let resData = response.data;
