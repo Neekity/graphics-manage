@@ -167,6 +167,16 @@ const routes = [
         },
         component: () => import(/* webpackChunkName: "about" */ '../views/menu/index.vue')
     },
+    {
+        path: '/example',
+        name: 'Example',
+        meta: {
+            title: '示例',
+            authCheck: false,
+            hideNav: true
+        },
+        component: () => import(/* webpackChunkName: "about" */ '../views/example/showMe.vue')
+    },
 ]
 
 const RouterConfig = {
@@ -192,6 +202,9 @@ const setActiveMenu = function (to) {
     }
 
     const menuList = store.state.user.menu;
+    if (!menuList){
+        return;
+    }
     for (let i = 0; i < menuList.length; i++) {
         let skip = false;
         if (menuList[i].children) {

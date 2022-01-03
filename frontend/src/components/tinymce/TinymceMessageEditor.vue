@@ -71,7 +71,7 @@ export default {
         language: 'zh_CN',
         language_url: this.baseUrl + 'langs/zh_CN.js',
         width:'100%',
-        toolbar: 'forecolor backcolor bold italic link hr restoredraft| bullist numlist table image template fullscreen emoticons codesample| alignleft aligncenter alignright alignjustify outdent indent | formatselect fontselect fontsizeselect',
+        toolbar: 'forecolor backcolor bold italic link hr restoredraft| bullist numlist table image template fullscreen emoticons codesample| alignleft aligncenter alignright alignjustify outdent indent | formatselect fontselect fontsizeselect | selectMaterialToolbarButton',
         content_style: "img {display: block;max-width: 100%; height: auto;} body{margin:0;}",
         image_description: false,
         placeholder: '请在此输入正文内容',
@@ -127,6 +127,14 @@ export default {
             this.hasChange = true
             this.$emit('input', editor.getContent())
           })
+        },
+        setup: function (editor){
+          editor.ui.registry.addButton('selectMaterialToolbarButton', {
+            text: '插入素材',
+            onAction: function () {
+              _this.$emit('showSelectMaterialModal');
+            }
+          });
         },
       }
     }

@@ -210,14 +210,15 @@
 </template>
 <script>
 import TinymceViewer from "../../tinymce/TinymceViewer";
+import TextTruncate from "../../TextTruncate";
 
 export default {
   name: "MaterialTemplateList",
-  components: {TinymceViewer},
+  components: {TextTruncate, TinymceViewer},
   data() {
     return {
       channel: 0,
-      baseUrl: 'tinymce/',
+      baseUrl: '/tinymce/',
       isActive: false,
       showTable: false,
       templates: [],
@@ -226,6 +227,17 @@ export default {
       overlay: 0,
       dialog: false,
       deleteId: 0,
+      headers: [{
+        text: '标题',
+        align: 'start',
+        sortable: false,
+        value: 'name',
+      },
+        {text: '摘要', value: 'abstract'},
+        {text: '频道', value: 'channel_id'},
+        {text: '更新时间', value: 'updated_at'},
+        {text: 'Actions', value: 'actions', sortable: false},
+      ]
     }
   },
   watch: {

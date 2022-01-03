@@ -1,7 +1,7 @@
 Name: graphics-api
 Host: 0.0.0.0
 Port: 80
-DataSource:
+DataSource: root:123456@tcp(127.0.0.1:3306)/graphics?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai
 UserInfoUrl:
 ClientID:
 ClientSecret:
@@ -9,11 +9,11 @@ Endpoint:
   AuthURL:
   TokenURL:
   AuthStyle: 1
-RedirectURL:
+RedirectURL: http://graphics.com:8484/backend/oauth/callback
 Scopes:
   - user.basic
 JwtAuth:
-  AccessSecret:
+  AccessSecret: g9kS37L38en1IdAn45H10HYeW8QmbJGvwBJOpdZpx8cxrd7EL1phYVJDNbiHnLVv
   AccessExpire: 604800
 FrontUrl: http://graphics.com:8484/login?token=
 BeanstalkConf:

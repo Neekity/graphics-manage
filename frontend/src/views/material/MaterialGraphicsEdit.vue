@@ -3,17 +3,20 @@
     <v-card width="660px" class="mx-auto my-12">
       <v-card-title>
         <v-row>
-          <v-col cols="12"
-                 lg="9"
-                 md="8"
-                 sm="6"
-                 xs="12">
-            <v-text-field id="title" v-model="materialName" outlined dense label="标题"
+          <v-col cols="12">
+            <v-text-field id="title" v-model="materialName" outlined dense label="标题" hide-details="auto"
                           :rules="[value => !!value || '请输入标题！',]"></v-text-field>
           </v-col>
           <v-col cols="12"
-                 lg="3"
-                 md="4"
+                 lg="6"
+                 md="6"
+                 sm="6"
+                 xs="12">
+            <v-text-field v-model="author" outlined dense label="作者（非必填）"></v-text-field>
+          </v-col>
+          <v-col cols="12"
+                 lg="6"
+                 md="6"
                  sm="6"
                  xs="12">
             <v-select
@@ -45,6 +48,7 @@
           </div>
           <tinymce-message-editor @hook:destroyed="editorInit" v-if="showEditor" v-model="content"
                                   :editor-templates="channelTemplates" @getImages="getImages"
+                                  @showSelectMaterialModal="showSelectMaterialModal"
                                   :id="'tinymce-graphics-'+materialId"
                                   :base-url="baseUrl" :channel="channel"></tinymce-message-editor>
         </v-row>
@@ -204,6 +208,116 @@
                 </v-card-text>
               </v-card>
             </v-dialog>
+            <v-dialog v-model="insertMaterialDialog" width="960">
+              <v-card>
+                <v-card-text>
+                  <v-tabs v-model="tab">
+                    <v-tabs-slider></v-tabs-slider>
+                    <v-tab
+                        v-for="item in tabItems"
+                        :key="item"
+                    >{{ item }}
+                    </v-tab>
+                  </v-tabs>
+                  <v-tabs-items v-model="tab">
+                    <v-tab-item
+                        key="图片">
+                      <v-lazy
+                          v-model="isImageActive"
+                          :options="{
+          threshold: .5
+        }"
+                          min-height="200"
+                          transition="fade-transition"
+                      >
+                        <v-container fluid class="text-center">
+                          <v-row align="center"
+                                 justify="center"
+                                 class="fill-height"
+                          >
+                            <v-col
+                                v-for="image in images"
+                                :key="image.id"
+                                cols="12"
+                                lg="3"
+                                md="4"
+                                sm="6"
+                                xs="12"
+                            >
+                              <v-hover v-slot="{ hover }">
+                                <v-card
+                                    :elevation="hover ? 12 : 0"
+                                    @click="insertImageToContent(image.url)"
+                                >
+                                  <v-img
+                                      height="250"
+                                      contain
+                                      :src="image.url"
+                                  >
+                                  </v-img>
+                                </v-card>
+                              </v-hover>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-lazy>
+                    </v-tab-item>
+                    <v-tab-item
+                        key="模版">
+                      <v-lazy
+                          v-model="isTemplateActive"
+                          :options="{
+          threshold: .5
+        }"
+                          min-height="200"
+                          transition="fade-transition"
+                      >
+                        <v-container fluid>
+                          <v-row>
+                            <v-col
+                                v-for="template in templates"
+                                :key="template.id"
+                                cols="12"
+                                lg="3"
+                                md="4"
+                                sm="6"
+                                xs="12"
+                            >
+                              <v-card>
+                                <v-card-title class="text-h6">
+                                  {{ template.name }}
+                                </v-card-title>
+                                <div class="tinymce-viewer px-2">
+                                  <tinymce-viewer v-model="template.content" :base-url="baseUrl"></tinymce-viewer>
+                                </div>
+                                <v-divider></v-divider>
+                                <v-card-actions class="pt-0">
+                                  <div>更新于 {{ template.updated_at }}</div>
+                                  <v-spacer></v-spacer>
+                                  <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                      <v-btn
+                                          v-bind="attrs"
+                                          v-on="on"
+                                          icon color="blue darken-2"  @click="insertTemplateToContent(template.content)"
+                                      >
+                                        <v-icon>mdi-tray-arrow-down</v-icon>
+                                      </v-btn>
+                                    </template>
+                                    <span>点击插入模版</span>
+                                  </v-tooltip>
+                                </v-card-actions>
+                              </v-card>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-lazy>
+                    </v-tab-item>
+                  </v-tabs-items>
+
+                </v-card-text>
+              </v-card>
+            </v-dialog>
           </v-col>
           <v-divider vertical></v-divider>
           <v-col>
@@ -240,7 +354,7 @@
       </v-card-actions>
     </v-card>
     <v-dialog v-model="publishDialog" width="960">
-      <v-card>
+      <v-card class="overflow-y-auto" style="max-height: 600px" v-scroll.self="onScroll">
         <v-card-text>
           <v-row class="pt-6">
             <v-col cols="12">
@@ -258,8 +372,11 @@
                         clear-icon="mdi-close-circle-outline"
                     ></v-text-field>
                     <v-treeview
+                        :key="audiencesTreeKey"
                         ref="audiencesTree"
-                        v-model="audiencesSelection"
+                        v-model="audiencesTreeSelection"
+                        selection-type="independent"
+                        item-text="text"
                         :items="audiencesTree"
                         selectable
                         return-object
@@ -284,15 +401,15 @@
                             small
                             close
                             class="ma-1"
-                            @click:close="audiencesSelection.splice(i,1)"
+                            @click:close="removeAudience(i)"
                         >
                           <v-icon
                               left
                               small
                           >
-                           mdi-account
+                            mdi-account
                           </v-icon>
-                          {{ node.name }}
+                          {{ node.text }}
                         </v-chip>
                       </v-scroll-x-transition>
                     </v-card-text>
@@ -314,18 +431,6 @@
             </v-col>
             <v-spacer></v-spacer>
           </v-row>
-          <v-row align="center" justify="center">
-            <v-col cols="12" md="3" sm="6" xs="12">
-              <v-switch
-                  v-model="authorSwitch"
-                  label="去填写作者"
-              ></v-switch>
-            </v-col>
-            <v-col v-if="authorSwitch" cols="12" md="3" sm="6" xs="12">
-              <v-text-field v-model="author" outlined dense label="作者"></v-text-field>
-            </v-col>
-            <v-spacer></v-spacer>
-          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-btn
@@ -335,8 +440,16 @@
           >
             群发
           </v-btn>
+          <v-btn
+              color="success"
+              @click="scrollTarget"
+              class="text-center"
+          >
+            滚动
+          </v-btn>
         </v-card-actions>
       </v-card>
+
     </v-dialog>
     <v-overlay :value="overlay">
       <v-progress-circular
@@ -348,15 +461,18 @@
 </template>
 
 <script>
+import TinymceViewer from "../../components/tinymce/TinymceViewer";
 let moment = require("moment");
 import TinymceMessageEditor from "../../components/tinymce/TinymceMessageEditor";
 import 'vue2-datepicker/index.css';
 
 export default {
   name: "MaterialGraphicsEdit",
-  components: {TinymceMessageEditor},
+  components: {TinymceViewer, TinymceMessageEditor},
   data() {
     return {
+      tab:null,
+      tabItems: ['图片', '模版'],
       baseUrl: '/tinymce/',
       uploadImageDialog: false,
       imageFile: null,
@@ -365,7 +481,9 @@ export default {
       audiencesOpen: [],
       audiencesSearch: null,
       audiencesSelection: [],
-      audiencesTree: [{id: 0, name: '全选', children: []}],
+      audiencesTreeKey: 0,
+      audiencesTreeSelection: [],
+      audiencesTree: [{id: '0', text: '全部听众', children: []}],
       overlay: 0,
       timedSending: false,
       authorSwitch: false,
@@ -384,11 +502,19 @@ export default {
       imageUrl: '',
       content: '',
       isImageActive: null,
+      isTemplateActive: null,
       channelTemplates: [],
+      templates: [],
       selectImage: {},
       images: [],
       selectDialog: false,
+      insertMaterialDialog: false,
       transparent: 'rgba(255, 255, 255, 0)',
+      disableNodeFinished: false,
+      systemSet: false,
+      disableNodeArray: [],
+      enableNodeMaps: {},
+      scrollEle: null,
     }
   },
   watch: {
@@ -401,12 +527,157 @@ export default {
         }
       },
     },
+    audiencesTreeSelection: {
+      handler(newV, oldV) {
+        if (this.systemSet) {
+          return;
+        }
+
+        this.systemSet = true;
+        let newIds = []
+        let oldIds = []
+        newV.forEach(function (item) {
+          newIds.push(item.id)
+        })
+        oldV.forEach(function (item) {
+          oldIds.push(item.id)
+        })
+
+        const that = this;
+        //增加的节点
+        let addIds = newIds.filter(function (v) {
+          return oldIds.indexOf(v) === -1
+        });
+        if (addIds.length > 0) {
+          addIds.forEach(function (id) {
+            newV.forEach(function (item) {
+              if (item.id == id) {
+                if (item.children) {
+                  item.children.forEach(function (children) {
+                    that.disableNodes(children)
+                  })
+                }
+              }
+            })
+          })
+          this.audiencesTreeSelection = this.audiencesTreeSelection.concat(this.disableNodeArray)
+        }
+
+        //删除的节点
+        let removedIds = oldIds.filter(function (v) {
+          return newIds.indexOf(v) === -1
+        });
+        if (removedIds.length > 0) {
+          removedIds.forEach(function (id) {
+            oldV.forEach(function (item) {
+              if (item.id == id) {
+                if (item.children) {
+                  item.children.forEach(function (children) {
+                    that.enableNodes(children)
+                  })
+                }
+              }
+            })
+          })
+          this.removeDisabledNode();
+        }
+        this.audiencesSelection = [];
+        for (let i = 0; i < this.audiencesTreeSelection.length; i++) {
+          if (!this.audiencesTreeSelection[i].disabled) {
+            this.audiencesSelection.push(this.audiencesTreeSelection[i])
+          }
+        }
+        this.$nextTick(function () {
+          this.systemSet = false;
+          this.disableNodeArray = [];
+          this.enableNodeMaps = {};
+        });
+        this.audiencesTreeKey += 1;
+        if (this.scrollEle) {
+          this.$nextTick(() => {
+            this.scrollEle.target.scrollTop = this.scrollEleTop;
+          })
+        }
+      },
+    }
   },
   created() {
     this.getChannel();
     this.getMaterial();
   },
   methods: {
+    scrollTarget() {
+      this.scrollEle.target.scrollTop = this.scrollEleTop;
+    },
+    onScroll(e) {
+      if (this.scrollEle == null) {
+        this.scrollEle = e;
+      }
+      this.scrollEleTop = e.target.scrollTop;
+
+    },
+    removeAudience(i) {
+      this.systemSet = true;
+      let treeIdx = 0
+      for (; treeIdx < this.audiencesTreeSelection.length; treeIdx++) {
+        if (this.audiencesTreeSelection[treeIdx].id == this.audiencesSelection[i].id) {
+          if (this.audiencesTreeSelection[treeIdx].children) {
+            for (let childrenIdx = 0; childrenIdx < this.audiencesTreeSelection[treeIdx].children.length; childrenIdx++) {
+              this.enableNodes(this.audiencesTreeSelection[treeIdx].children[childrenIdx])
+            }
+          }
+          break;
+        }
+      }
+      this.audiencesTreeSelection.splice(treeIdx, 1)
+      this.audiencesSelection.splice(i, 1)
+      this.removeDisabledNode();
+      this.$nextTick(function () {
+        this.systemSet = false;
+        this.enableNodeMaps = {};
+      });
+      this.audiencesTreeKey += 1;
+    },
+    enableNodes(node) {
+      this.enableNodeMaps[node.id] = 1;
+      node.disabled = false;
+      if (node.children) {
+        for (let i = 0; i < node.children.length; i++) {
+          this.enableNodes(node.children[i])
+        }
+      }
+    },
+    removeDisabledNode() {
+      let tmp = []
+      for (let i = 0; i < this.audiencesTreeSelection.length; i++) {
+        if (!this.enableNodeMaps[this.audiencesTreeSelection[i].id]) {
+          tmp.push(this.audiencesTreeSelection[i])
+        }
+      }
+      this.audiencesTreeSelection = tmp
+    },
+    disableNodes(node) {
+      this.disableNodeArray.push(node)
+      node.disabled = true;
+      if (node.children) {
+        for (let i = 0; i < node.children.length; i++) {
+          this.disableNodes(node.children[i])
+        }
+      }
+    },
+    showSelectMaterialModal(){
+      this.insertMaterialDialog = true;
+    },
+    insertImageToContent(url){
+      window.tinymce.get('tinymce-graphics-'+this.materialId).focus();
+      window.tinymce.get('tinymce-graphics-'+this.materialId).selection.setContent('<img src="'+url+'" />')
+      this.insertMaterialDialog = false;
+    },
+    insertTemplateToContent(content){
+      window.tinymce.get('tinymce-graphics-'+this.materialId).focus();
+      window.tinymce.get('tinymce-graphics-'+this.materialId).selection.setContent(content)
+      this.insertMaterialDialog = false;
+    },
     destroyEditor() {
       this.showEditor = false;
     },
@@ -420,8 +691,8 @@ export default {
             let resData = response.data;
             if (resData.code === 0) {
               this.channelTemplates = [];
-              let templates = resData.data || [];
-              for (let i = 0; i < templates.length; i++) {
+              this.templates = resData.data || [];
+              for (let i = 0; i < this.templates.length; i++) {
                 this.channelTemplates.push({
                       title: resData.data[i].name,
                       description: resData.data[i].abstract,
@@ -452,7 +723,7 @@ export default {
       let formData = new FormData();
       formData.append('graphics_img', this.imageFile, this.imageFile.name);
       formData.append('channel_id', this.channel);
-      this.$graphicsHttp('post','/material/image/upload', formData)
+      this.$graphicsHttp('post', '/material/image/upload', formData)
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {

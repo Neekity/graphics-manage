@@ -35,7 +35,8 @@ func (l *LoginCallbackLogic) LoginCallback(code string) (*types.JwtTokenResponse
 	}
 	_, userInfo := helper.HttpGet(l.svcCtx.Config.UserInfoUrl, map[string]string{
 		"Content-Type": "application/json", "Authorization": "Bearer " + token.AccessToken})
-	var userInfoMap types.UserInfo
+	var userInfoMap types.BasicUserInfo
+	logx.Error(userInfo)
 	jsonUnmarshalErr := json.Unmarshal([]byte(userInfo), &userInfoMap)
 	if jsonUnmarshalErr != nil {
 		logx.Error("格式化用户信息:" + userInfo + "失败" + jsonUnmarshalErr.Error())
@@ -45,11 +46,11 @@ func (l *LoginCallbackLogic) LoginCallback(code string) (*types.JwtTokenResponse
 	if err != nil {
 		return nil, err
 	}
-	user, modelErr := l.svcCtx.UserModel.UpdateOrCreate(userInfoMap.Data.Email, model.User{
-		Avatar:   userInfoMap.Data.Avatar,
+	user, modelErr := l.svcCtx.UserModel.UpdateOrCreate(userInfoMap.Email, model.User{
+		Avatar:   userInfoMap.Photo,
 		Password: string(password),
-		Name:     userInfoMap.Data.Name,
-		Email:    userInfoMap.Data.Email,
+		Name:     userInfoMap.Name,
+		Email:    userInfoMap.Email,
 	})
 	if modelErr != nil {
 		return nil, modelErr

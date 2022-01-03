@@ -2684,8 +2684,8 @@ copy-descriptor@^0.1.0:
 
 copy-webpack-plugin@^5.1.1:
   version "5.1.2"
-  resolved "https://registry.nlark.com/copy-webpack-plugin/download/copy-webpack-plugin-5.1.2.tgz?cache=0&sync_timestamp=1624628567065&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fcopy-webpack-plugin%2Fdownload%2Fcopy-webpack-plugin-5.1.2.tgz#8a889e1dcafa6c91c6cd4be1ad158f1d3823bae2"
-  integrity sha1-ioieHcr6bJHGzUvhrRWPHTgjuuI=
+  resolved "https://registry.yarnpkg.com/copy-webpack-plugin/-/copy-webpack-plugin-5.1.2.tgz#8a889e1dcafa6c91c6cd4be1ad158f1d3823bae2"
+  integrity sha512-Uh7crJAco3AjBvgAy9Z75CjK8IG+gxaErro71THQ+vv/bl4HaQcpkexAY8KVW/T6D2W2IRr+couF/knIRkZMIQ==
   dependencies:
     cacache "^12.0.3"
     find-cache-dir "^2.1.0"
