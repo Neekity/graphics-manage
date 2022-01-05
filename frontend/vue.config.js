@@ -48,8 +48,8 @@ module.exports = {
                 } );
             }
         }
-        copyFolderRecursiveSync('/data/node_modules/tinymce/skins','/data/public/tinymce')
-        copyFileSync('/data/node_modules/tinymce/plugins/emoticons/js/emojis.js',
-            '/data/public/tinymce/plugins/emoticons/js/emojis.js')
+        copyFolderRecursiveSync('./node_modules/tinymce/skins','./public/tinymce')
+        copyFileSync('./node_modules/tinymce/plugins/emoticons/js/emojis.js',
+            './public/tinymce/plugins/emoticons/js/emojis.js')
     }
 }

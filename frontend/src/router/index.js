@@ -175,7 +175,7 @@ const routes = [
             authCheck: false,
             hideNav: true
         },
-        component: () => import(/* webpackChunkName: "about" */ '../views/example/showMe.vue')
+        component: () => import(/* webpackChunkName: "about" */ '../views/example/ShowMe.vue')
     },
 ]
 

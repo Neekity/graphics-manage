@@ -48,7 +48,6 @@
       </v-carousel-item>
     </v-carousel>
   </v-app>
-
 </template>
 
 <script>

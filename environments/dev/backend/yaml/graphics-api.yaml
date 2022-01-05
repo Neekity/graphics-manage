@@ -21,3 +21,5 @@ BeanstalkConf:
     Tube: tube1
   - Endpoint: beanstalkd-2:7772
     Tube: tube2
+
+RootPath: /data
