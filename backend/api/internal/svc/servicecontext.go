@@ -44,7 +44,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	if err != nil {
 		panic(err)
 	}
-	e, err := casbin.NewEnforcer("/data/resource/rbac_with_resource_roles_model.conf", a)
+	e, err := casbin.NewEnforcer(c.RootPath+"/resource/rbac_with_resource_roles_model.conf", a)
 	if err != nil {
 		panic(err)
 	}
