@@ -33,7 +33,7 @@ func MaterialImageUploadHandler(ctx *svc.ServiceContext) http.HandlerFunc {
 		urlByte := md5.Sum(data)
 		fileSuffix := path.Ext(fh.Filename)
 		url := fmt.Sprintf("/%d-%x%s", channelId, urlByte, fileSuffix)
-		destFile, err := os.Create("/data/resource/image/" + url)
+		destFile, err := os.Create(ctx.Config.RootPath + "/resource/image/" + url)
 		if err != nil {
 			httpx.Error(w, err)
 			return
