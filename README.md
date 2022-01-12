@@ -32,3 +32,7 @@ tips：如果是amd64架构需要将go.Dockerfile中的GOARCH设置为amd64
 
 <img src="https://i.ibb.co/jw2CvxJ/271639627860-pic-hd.png" alt="271639627860-pic-hd" border="0">
 <img src="https://i.ibb.co/Gcq3JmG/281639627889-pic-hd.png" alt="281639627889-pic-hd" border="0">
+
+# QA
+Q：为啥把前端的dist文件夹也给加进来了
+A：因为服务器太垃圾无法build，只能在本地build
