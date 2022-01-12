@@ -11,6 +11,7 @@ import (
 	"go-project/graphics-manage/backend/common/helper"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -46,8 +47,17 @@ func (m *CheckDataPermissionMiddleware) Handle(next http.HandlerFunc) http.Handl
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyInfo))
 
 		var data Data
-		if err := json.Unmarshal(bodyInfo, &data); err != nil {
-			httpx.OkJson(w, helper.ApiError(err.Error(), nil))
+		if r.URL.Path == "/material/image/upload" {
+			data.ChannelId, err = strconv.Atoi(r.FormValue("channel_id"))
+			if err != nil {
+				httpx.OkJson(w, helper.ApiError(err.Error(), nil))
+				return
+			}
+		} else {
+			if err := json.Unmarshal(bodyInfo, &data); err != nil {
+				httpx.OkJson(w, helper.ApiError(err.Error(), nil))
+				return
+			}
 		}
 
 		dataType := constant.CasbinPermissionWrite

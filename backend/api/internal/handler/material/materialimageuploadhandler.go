@@ -3,6 +3,7 @@ package handler
 import (
 	"crypto/md5"
 	"fmt"
+	"go-project/graphics-manage/backend/common/helper"
 	"io"
 	"net/http"
 	"os"
@@ -27,6 +28,10 @@ func MaterialImageUploadHandler(ctx *svc.ServiceContext) http.HandlerFunc {
 			httpx.Error(w, err)
 			return
 		}
+		if channelId == 0 {
+			httpx.OkJson(w, helper.ApiError("请选择频道后上传！", nil))
+			return
+		}
 		defer f.Close()
 		// 创建保存文件
 		data := []byte(fh.Filename)
@@ -49,10 +54,6 @@ func MaterialImageUploadHandler(ctx *svc.ServiceContext) http.HandlerFunc {
 
 		l := logic.NewMaterialImageUploadLogic(r.Context(), ctx)
 
-		if err != nil {
-			httpx.Error(w, err)
-			return
-		}
 		resp, err := l.MaterialImageUpload(channelId, fh.Filename, url)
 		if err != nil {
 			httpx.Error(w, err)

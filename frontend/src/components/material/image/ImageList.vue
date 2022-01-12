@@ -278,12 +278,13 @@ export default {
       this.dialog = true;
     },
     deleteImage(id) {
+      this.overlay += 1
       this.$graphicsHttp('post', '/material/delete', {id: id})
           .then(response => {
             let resData = response.data;
             if (resData.code === 0) {
               this.$toast('删除图片成功！' + resData.message, {
-                type: 'error',
+                type: 'success',
                 timeout: 2000,
               });
               this.getImages();
