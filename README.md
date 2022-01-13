@@ -1,5 +1,4 @@
-# graphics-manage
-
+# [graphics-manage](https://graphics.huangtaohome.top/)
 类似企业微信图文消息和微信公众号图文消息的管理平台
 
 # 后端
