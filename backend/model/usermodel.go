@@ -56,13 +56,17 @@ func (m *defaultUserModel) GetUserInfo(userId uint, enforce *casbin.Enforcer) (*
 	if err := m.GormDB.Model(&Menu{}).Where("path != ?", "").Pluck("path", &menuPath).Error; err != nil {
 		return nil, err
 	}
-	for _, item := range menuPath {
-		if flag, err := enforce.Enforce(strconv.Itoa(int(userId)), item, constant.CasbinPermissionRead); err != nil {
-			return nil, err
-		} else if flag {
-			access = append(access, item)
-		} else {
-			logx.Error(item, flag, err)
+	if isAdmin := enforce.HasGroupingPolicy(strconv.Itoa(int(userId)), constant.AdminRole); isAdmin == true {
+		access = menuPath
+	} else {
+		for _, item := range menuPath {
+			if flag, err := enforce.Enforce(strconv.Itoa(int(userId)), item, constant.CasbinPermissionRead); err != nil {
+				return nil, err
+			} else if flag {
+				access = append(access, item)
+			} else {
+				logx.Error(item, flag, err)
+			}
 		}
 	}
 	userInfo := UserInfo{
