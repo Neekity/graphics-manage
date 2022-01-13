@@ -74,3 +74,5 @@ const CasbinChannelMessageResourceRole = "graphics/channel/%d/message"
 
 const CasbinMessagePolicy = "graphics/message/%d"
 const CasbinMaterialPolicy = "graphics/material/%d"
+
+const AdminRole = "admin"

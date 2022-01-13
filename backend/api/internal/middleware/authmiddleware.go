@@ -64,14 +64,16 @@ func (m *AuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 			httpx.OkJson(w, helper.ApiError(err.Error(), nil))
 			return
 		}
-		flag, err := m.enforcer.Enforce(userId, r.URL.Path, constant.CasbinPermissionWrite)
-		if err != nil {
-			httpx.OkJson(w, helper.ApiError(err.Error(), nil))
-			return
-		}
-		if !flag {
-			httpx.OkJson(w, helper.ApiError("未拥有该路由的权限", nil))
-			return
+		if isAdmin := m.enforcer.HasGroupingPolicy(userId, constant.AdminRole); isAdmin == false {
+			flag, err := m.enforcer.Enforce(userId, r.URL.Path, constant.CasbinPermissionWrite)
+			if err != nil {
+				httpx.OkJson(w, helper.ApiError(err.Error(), nil))
+				return
+			}
+			if !flag {
+				httpx.OkJson(w, helper.ApiError("未拥有该路由的权限", nil))
+				return
+			}
 		}
 		next(w, r)
 	}
