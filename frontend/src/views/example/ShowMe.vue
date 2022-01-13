@@ -46,6 +46,18 @@
           </v-row>
         </v-sheet>
       </v-carousel-item>
+      <v-carousel-item :key="2">
+        <v-sheet
+            height="100%"
+            tile
+        >
+          <v-row class="fill-height" align="center" justify="center">
+            <v-col col="12"><h3>超级管理员账号</h3></v-col>
+            <v-col col="12"><h3>admin@graphics.com admin</h3></v-col>
+            <v-col col="12"><h3>建议使用超级管理员账号给自己的账号分配权限</h3></v-col>
+          </v-row>
+        </v-sheet>
+      </v-carousel-item>
     </v-carousel>
   </v-app>
 </template>

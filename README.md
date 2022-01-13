@@ -1,4 +1,4 @@
-# [graphics-manage](https://graphics.huangtaohome.top/)
+# [graphics-manage](https://graphics.huangtaohome.top/example)
 类似企业微信图文消息和微信公众号图文消息的管理平台
 
 # 后端
@@ -28,7 +28,7 @@ tips：如果是amd64架构需要将go.Dockerfile中的GOARCH设置为amd64
 3. 如有自己开发的app，可使用极光推送将消息推送至app
 
 # 效果图如下
-[点击进入demo👈](https://graphics.huangtaohome.top/)
+[点击进入demo👈](https://graphics.huangtaohome.top/example)
 
 <img src="https://i.ibb.co/jw2CvxJ/271639627860-pic-hd.png" alt="271639627860-pic-hd" border="0">
 <img src="https://i.ibb.co/Gcq3JmG/281639627889-pic-hd.png" alt="281639627889-pic-hd" border="0">
